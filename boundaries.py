@@ -36,7 +36,7 @@ def periodic_boundary_force(pos, n_par, x_len, y_len):
             after periodic boundary conditions are applied.
             
     x_diff (1D numpy array size: number of particles x number of particles): 
-            The difference in z positions between all the particles.
+            The difference in z positions between all the particles
     """
     
     # Initialize the distances in positions arrays.
@@ -130,6 +130,54 @@ def periodic_boundary_force(pos, n_par, x_len, y_len):
         # Stores the new position    
         new_pos[par] = pos[par]
     return(new_pos)
+
+
+
+def Momentum_Mirror(Position, Momentum, Piston_Momentum, Piston_Position, Mirror_Position, N_Par):
+    #This is the function for the momentum mirror and the Piston. It takes in: 
+    
+    #* Particle_Position = This should be a np.array with dimensions (N, 3).
+    
+    #* Particle_Momentum = This should be a np.array with dimensions (N, 3).
+    
+    #* Piston_Momentum = This should be a float.
+    
+    #* Piston_Position = This will be a float that is updated after every loop.
+    
+    #* Momentum_Mirror_Position = This should also be a float.
+    
+    #* Number of particles = This should be a Constant Integer.
+    
+   # This function will check each particles z position, since that is the dimension we chose, 
+   # and update the new z position if the position violates our conditions. Finally the function 
+   # returns the Particles Positions and Momentums.
+    
+    for particle in range(N_Par):
+        Particle_Position = Position[particle]
+        Particle_Momentum = Momentum[particle]
+        
+        if Particle_Position[2] < Piston_Position:
+            Particle_Position[2] = Piston_Position + (Piston_Position - Particle_Position[2])
+            Particle_Momentum[2] = Piston_Momentum - Particle_Momentum[2]
+            
+        elif Particle_Position[2] > Mirror_Position:
+            Particle_Position[2] = Mirror_Position - (Particle_Position[2] - Mirror_Position)
+            Particle_Momentum[2] = -(Particle_Momentum[2])  
+            
+    return Position,Momentum
+
+
+def Piston_Position(Piston_Position, Piston_Velocity, dt):
+    #This function is extremely straight forward, the function takes in:
+    
+    #* Piston_Position = This should be Float.
+    #* Piston Velocity = This should be a Float.
+    #* dt = This should be Float.
+    
+    #The function takes the piston's position and updates it. Yup.
+    
+    Piston_Position += Piston_Velocity * dt
+    return Piston_Position
 
 
 
