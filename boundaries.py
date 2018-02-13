@@ -36,7 +36,7 @@ def periodic_boundary_force(pos, n_par, x_len, y_len):
             The difference in y positions between all the particles
             after periodic boundary conditions are applied.
             
-    x_diff (1D numpy array size: number of particles x number of particles): 
+    z_diff (1D numpy array size: number of particles x number of particles): 
             The difference in z positions between all the particles
     """
     
