@@ -1,5 +1,6 @@
 '''
-#Module for boundaries.
+Module for boundaries.
+'''
 
 import numpy as np
 
