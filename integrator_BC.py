@@ -48,7 +48,7 @@ def vel_ver(position, momentum, dt, force, radius, length):
     momentum_half = 0.5*dt*force + momentum
     new_position = momentum_half*dt/mass + position
 
-    # Applies the boundary conditions to the x,y positions
+    # Applies the boundary conditions to the x, y positions
     new_position[:,0:2] = new_position[:,0:2] % length
 
     # Updates the final force and momentum
