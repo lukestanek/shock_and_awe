@@ -45,20 +45,21 @@ def runSimulation(params):
    dim = np.array([[0,Lx], [0,Ly], [0,Ly]])      # x, y, z
    eps = params['eps']
    sigma = params['sigma']
+   radius = params['radius']
    # initialize the system
    pistonPos = params['piston']['z0']        # piston initial position
    pistonVel = params['piston']['v0']        # piston initial velocity
    m = np.full(params['m'])                  # masses
    
    #
-   #!! pos, vel = initialize.init(dim, pistonPos, params['n'])
+   #!! pos, mom = initialize.init(dim, pistonPos, params['n'])
    #
    
    M = int(round(endTime*1.0/dt))         # number of time steps to run
 
    # time lists for positions, velocities, energies
    posHist = np.zeros((M,N,3))
-   velHist = np.zeros_like(posHist)
+   momHist = np.zeros_like(posHist)
    KEhist = np.zeros((M, N))
    PEhist = np.zeros_like(KE)
    Ehist = np.zeros(M)
@@ -71,6 +72,9 @@ def runSimulation(params):
       print "==> Simulation run"
       print " - computing...",
       
+   # compute forces on initial particles
+   force = integrator.calc_force(pos, radius, Lx, Ly)
+   
    for i in xrange(1, M):
       # main loop that goes over till given end time
       t = dt*i
@@ -83,27 +87,27 @@ def runSimulation(params):
             sys.stdout.flush()
 
       # lets do some work here...
-      # pos, vel = integrator.velocity_verlet(pos, vel, dt, dim, eps, sigma)
-
+      # update positions+momentum
+      pos, mom, force = integrator.vel_ver(pos, mom, dt, force, Lx, Ly)
       # impose the boundaries
       pos = boundaries.periodic_boundary_position(pos, N, Lx, Ly)
       pistonPos = boundaries.Piston_Position(pistonPos, pistonVel, dt)
-      pos, vel = boundaries.Momentum_Mirror(pos, vel, pistonVel, pistonPos, Lz, N)
+      pos, mom = boundaries.Momentum_Mirror(pos, mom, pistonVel, pistonPos, Lz, N)
 
       # compute measurables
-      #P = measurables.pressure(N, pos, vel, m, dim)
-      #T = measurables.temperature(N, pos, vel, m, dim)
+      #P = measurables.pressure(N, pos, mom, m, dim)
+      #T = measurables.temperature(N, pos, mom, m, dim)
 
       # save values in time history lists
       posHist[i] = pos
-      velHist[i] = vel
+      momHist[i] = mom
       KEhist[i] = KE
       PEhist[i] = PE
       Ehist[i] = E
 
       # output values (?) 
       #??? into which file
-      #output.write_step(N, pos, vel, KE, PE, E, T, P)
+      #output.write_step(N, pos, mom, KE, PE, E, T, P)
         
       # prepare for next time step
       # === fill in if necessary ===
@@ -114,7 +118,7 @@ def runSimulation(params):
    # output for visualization
    #output.write_4_movie()
    #??? we have to define an output file
-   #output.write_all_end(posHist, velHist, KEhist, PEhist, Ehist)
+   #output.write_all_end(posHist, momHist, KEhist, PEhist, Ehist)
 
    return
 

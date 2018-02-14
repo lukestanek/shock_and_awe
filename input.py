@@ -20,6 +20,7 @@ def readfile(file, args):
                           'dt': 1e-3, 'endTime': 10,              # time step, end time
                           'piston': {'z0': 0.0, 'v0': 1.0},       # piston init data
                           'eps': 1.0, 'sigma': 1.0,               # LennardJones potential parameters
+                          'radius': 0.1                           # cutoff radius used in force calculation
                         }
    '''
    # define initialized dictionary or system parameters
@@ -29,6 +30,7 @@ def readfile(file, args):
               'dt': 1e-3, 'endTime': 10,              # time step, end time
               'piston': {'z0': 0.0, 'v0': 1.0},       # piston init data
               'eps': 1.0, 'sigma': 1.0,               # LennardJones potential parameters
+              'radius': 0.1                           # cutoff radius used in force calculation
             }
    # read file into list ot lines
    fh = open(file, "r")
@@ -55,7 +57,7 @@ def readfile(file, args):
             params['Ly'] = float(vals[1])
             params['Lz'] = float(vals[2])
 
-         elif fld in ['m', 'dt', 'endTime', 'eps', 'sigma', 'n']:
+         elif fld in ['m', 'dt', 'endTime', 'eps', 'sigma', 'n', 'radius']:
             # parameters that take only one value
             params[fld] = float(restLine.strip())
          

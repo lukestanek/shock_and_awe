@@ -1,6 +1,8 @@
 '''
 Module for integrator.
-'''
+  
+(c) 2018 - Tom Dixon, Janez Krek, Devin Lake, Ryan Marcus, Luke Stanek
+'''  
 import numpy as np
 
 @jit()
@@ -90,7 +92,7 @@ def calc_force(position, radius, x_len, y_len):
     force = np.zeros((size, 3))
 
     # Calculates distances arrays using the periodic boundary conditions
-    x_diff, y_diff, z_diff = periodic_boundary_force(position, size, x_len, y_len):
+    x_diff, y_diff, z_diff = periodic_boundary_force(position, size, x_len, y_len)
     r_tilde = x_diff**2 + y_diff**2 + z_diff**2
     
     for i in range(size-1):
@@ -121,7 +123,4 @@ def calc_force(position, radius, x_len, y_len):
                 force[j][2] -= 0
 
     return force
-  
-'''  
-(c) 2018 - Tom Dixon, Janez Krek, Devin Lake, Ryan Marcus, Luke Stanek
-'''  
+
