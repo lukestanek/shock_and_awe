@@ -1,7 +1,5 @@
 '''
 Module for integrator.
-
-(c) 2018 - Tom Dixon, Janez Krek, Devin Lake, Ryan Marcus, Luke Stanek
 '''
 import numpy as np
 
@@ -123,3 +121,6 @@ def calc_force(position, radius, length):
                 force[j][2] -= 0
 
     return force
+'''  
+(c) 2018 - Tom Dixon, Janez Krek, Devin Lake, Ryan Marcus, Luke Stanek
+'''  
