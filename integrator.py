@@ -4,6 +4,7 @@ Module for integrator.
 (c) 2018 - Tom Dixon, Janez Krek, Devin Lake, Ryan Marcus, Luke Stanek
 '''  
 import numpy as np
+from numba import jit
 
 @jit()
 def vel_ver(position, momentum, dt, force, x_len, y_len):

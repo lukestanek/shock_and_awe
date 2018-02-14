@@ -10,7 +10,7 @@ import os
 import numpy as np
 import argparse
 
-import boundaries, input, initialize, integrator, measurables, output
+import boundaries, input, initialization, integrator, measurables, output
 
 def parse_args():
    '''
@@ -49,28 +49,27 @@ def runSimulation(params):
    # initialize the system
    pistonPos = params['piston']['z0']        # piston initial position
    pistonVel = params['piston']['v0']        # piston initial velocity
-   m = np.full(params['m'])                  # masses
    
    #
    #!! pos, mom = initialize.init(dim, pistonPos, params['n'])
    #
+   N = 10
    
    M = int(round(endTime*1.0/dt))         # number of time steps to run
+   m = np.full(N, params['m'])                  # masses
 
    # time lists for positions, velocities, energies
    posHist = np.zeros((M,N,3))
    momHist = np.zeros_like(posHist)
    KEhist = np.zeros((M, N))
-   PEhist = np.zeros_like(KE)
+   PEhist = np.zeros_like(KEhist)
    Ehist = np.zeros(M)
    # progress indicator
    progressList = [int(el) for el in M*np.linspace(0,1.,21)]
    progressList.pop(0)
 
    if progress:
-      print
-      print "==> Simulation run"
-      print " - computing...",
+      print("==> Simulation run\n - computing...",)
       
    # compute forces on initial particles
    force = integrator.calc_force(pos, radius, Lx, Ly)
@@ -82,7 +81,7 @@ def runSimulation(params):
       if progress:
          # display progress
          if( i == progressList[0] ):
-            print "{0:d}%...".format(int((i)*100.0/M)),
+            print("{0:d}%...".format(int((i)*100.0/M)),)
             progressList.pop(0)
             sys.stdout.flush()
 
@@ -113,7 +112,7 @@ def runSimulation(params):
       # === fill in if necessary ===
   
   
-   print "100%. Done!"
+   print("100%. Done!")
 
    # output for visualization
    #output.write_4_movie()
@@ -130,7 +129,7 @@ if __name__ == '__main__':
    
    if args.file:
       # read input file and return read parameters
-      params = input.readfile(args.file, args);
+      params = input.readfile(args.file[0], args);
    else:
       print("Input file is missing.")
       sys.exit()
