@@ -1,5 +1,7 @@
 '''
 Module for boundaries.
+
+(c) 2018 - Tom Dixon, Janez Krek, Devin Lake, Ryan Marcus, Luke Stanek
 '''
 
 import numpy as np
@@ -80,8 +82,8 @@ def periodic_boundary_force(pos, n_par, x_len, y_len):
 
     return(x_diff, y_diff, z_diff)
     
-    def periodic_boundary_position(pos , n_par, x_len, y_len):
-    """
+def periodic_boundary_position(pos , n_par, x_len, y_len):
+    '''
     This function moves the particles according to the periodic boundaries
     in the x and y directions.
     
@@ -107,8 +109,7 @@ def periodic_boundary_force(pos, n_par, x_len, y_len):
     A numpy array that contains the positions of all the
     particles in 3D space after applying periodic boundary
     conditions.
-
-    """
+    '''
     # Creates an array to store all the new positions
     new_pos = np.zeros_like(pos)
     
@@ -180,8 +181,4 @@ def Piston_Position(Piston_Position, Piston_Velocity, dt):
     Piston_Position += Piston_Velocity * dt
     return Piston_Position
 
-
-
-(c) 2018 - Tom Dixon, Janez Krek, Devin Lake, Ryan Marcus, Luke Stanek
-'''
 
