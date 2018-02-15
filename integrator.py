@@ -56,13 +56,13 @@ def vel_ver(position, momentum, Piston_p, Piston_Momentum, dt, force, x_len, y_l
     new_position = periodic_boundary_position(new_position , size, x_len, y_len)
     
     # Applies the momentum mirror to the z positions
-    new_position = Momentum_Mirror(new_position, momentum_half, Piston_Momentum, Piston_Position, Mirror_Position, size)
+    new_position = Momentum_Mirror(new_position, momentum_half, Piston_Momentum, Piston_p, Mirror_Position, size)
 
     # Updates the final force and momentum
     new_force = calc_force(new_position, radius, x_len, y_len)
     new_momentum = (0.5*dt*new_force + momentum_half)
 
-    return new_position, new_momentum, new_force
+    return new_position, new_momentum, new_force, Piston_p
   
   
 @jit()
