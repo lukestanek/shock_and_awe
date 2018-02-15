@@ -7,7 +7,7 @@ import numpy as np
 from numba import jit
 
 @jit()
-def vel_ver(position, momentum, dt, force, x_len, y_len):
+def vel_ver(position, momentum, Piston_p, Piston_Momentum, dt, force, x_len, y_len, Mirror_Position, radius):
     """
     This is the function that will update our position and momentum arrays. It
     assumes a rectangular piston cross-section and it applies boundary conditions
@@ -44,14 +44,19 @@ def vel_ver(position, momentum, dt, force, x_len, y_len):
       new_force (numpy array with size num_particles x 3):
               A numpy array containing the new force vector for each particle
     """
+    # Updates the Piston Position
+    Piston_p = Piston_Position(Piston_p, Piston_Momentum, dt)
     
     # Updates the halfstep momentum and the unedited position
     momentum_half = 0.5*dt*force + momentum
-    new_position = momentum_half*dt/mass + position
+    new_position = momentum_half*dt + position
 
     # Applies the boundary conditions to the x, y positions
     size = np.size(position, axis=0)
     new_position = periodic_boundary_position(new_position , size, x_len, y_len)
+    
+    # Applies the momentum mirror to the z positions
+    new_position = Momentum_Mirror(new_position, momentum_half, Piston_Momentum, Piston_Position, Mirror_Position, size)
 
     # Updates the final force and momentum
     new_force = calc_force(new_position, radius, x_len, y_len)
@@ -101,7 +106,7 @@ def calc_force(position, radius, x_len, y_len):
           
             # If particle is in poor man's radius, calculates force
             if r_tilde[i][j] <= radius**2:
-                S = 24*epsilon*( 2*(sigma**12)*(r_tilde[i][j]**-7) - (sigma**6)*(r_tilde[i][j]**-4) )
+                S = 6*( 2*(r_tilde[i][j]**-7) - (r_tilde[i][j]**-4) )
                 Sx,Sy,Sz = S*x_diff[i][j],S*y_diff[i][j],S*z_diff[i][j]
 
                 force[i][0] += Sx
