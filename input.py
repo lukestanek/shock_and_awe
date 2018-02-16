@@ -17,18 +17,18 @@ def readfile(file, args):
       
    Returns:
       (dict): system parameters -  
-               params = {'Lx': 1.0, 'Ly': 1.0, 'Lz': 1.0,         # system dimension
-                          'n': 1.0,                               # initial particle density
-                          'm': 0.0,                               # mass of particle
-                          'dt': 1e-3, 'endTime': 10,              # time step, end time
-                          'piston': {'z0': 0.0, 'v0': 1.0},       # piston init data
-                          'eps': 1.0, 'sigma': 1.0,               # LennardJones potential parameters
-                          'radius': 0.1                           # cutoff radius used in force calculation
-                        }
+                     params = { 'N': [1, 1, 1],                         # number of particles
+                                'spacing': [1.0, 1.0, 1.0],            # initial spacing of particles
+                                'm': 0.0,                               # mass of particle
+                                'dt': 1e-3, 'endTime': 10,              # time step, end time
+                                'piston': {'z0': 0.0, 'v0': 1.0},       # piston init data
+                                'eps': 1.0, 'sigma': 1.0,               # LennardJones potential parameters
+                                'radius': 0.1                           # cutoff radius used in force calculation
+                              }
    '''
    # define initialized dictionary or system parameters
-   params = {'Lx': 1.0, 'Ly': 1.0, 'Lz': 1.0,         # system dimension
-              'n': 1.0,                               # initial particle density
+   params = { 'N': [1, 1, 1],                         # number of particles
+              'spacing': [1.0, 1.0, 1.0],            # initial spacing of particles
               'm': 0.0,                               # mass of particle
               'dt': 1e-3, 'endTime': 10,              # time step, end time
               'piston': {'z0': 0.0, 'v0': 1.0},       # piston init data
@@ -43,7 +43,11 @@ def readfile(file, args):
    for i, line in enumerate(lines):
       # parse all lines
       print(line)
-      if "=" in line:
+      if line[0] is '#':
+         # skip comments
+         pass
+      
+      elif "=" in line:
          #  extract values from file
          fld, restLine = [el.strip() for el in line.split("=")]
 
@@ -53,14 +57,12 @@ def readfile(file, args):
             params['piston']['z0'] = vals[0]
             params['piston']['v0'] = vals[1]
             
-         elif fld == 'size':
-            # dimension of the system has 3 values: Lx, Ly, Lz
+         elif fld == 'N' or fld == 'spacing':
+            # number of particles in the system or spacing have 3 values: Nx, Ny, Nz / dx, dy, dz
             vals = [float(el.strip()) for el in restLine.split(",")]
-            params['Lx'] = float(vals[0])
-            params['Ly'] = float(vals[1])
-            params['Lz'] = float(vals[2])
+            params[fld] = [ float(vals[0]), float(vals[1]), float(vals[2]) ]
 
-         elif fld in ['m', 'dt', 'endTime', 'eps', 'sigma', 'n', 'radius']:
+         elif fld in ['m', 'dt', 'endTime', 'eps', 'sigma', 'radius']:
             # parameters that take only one value
             params[fld] = float(restLine.strip())
          

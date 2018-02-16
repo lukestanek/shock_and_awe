@@ -41,36 +41,21 @@ def runSimulation(params):
    t = 0
    endTime = params['endTime']
    dt = params['dt']
-   Lx, Ly, Lz = params['Lx'], params['Lz'], params['Lz']
-   dim = np.array([[0,Lx], [0,Ly], [0,Ly]])      # x, y, z
+   num_particles = params['N']               # number of particles in all three dimensions
+   spacing = params['spacing']               # particle spacing in all three dimensions
    eps = params['eps']
    sigma = params['sigma']
    radius = params['radius']
    # initialize the system
    pistonPos = params['piston']['z0']        # piston initial position
    pistonVel = params['piston']['v0']        # piston initial velocity
-   
-   #
-   #!! pos, mom = initialize.init(dim, pistonPos, params['n'])
-   #
-   
+
    print(params)
-   N = 10
    
-   pos = np.zeros((N,3))
-
-   # assign positions in all three coordinates
-   pos[:,0] = Lx * np.random.random(N)
-   pos[:,1] = Ly * np.random.random(N)
-   pos[:,2] = Lz * np.random.random(N)
-
-
-   print(pos)
-
-   mom = np.full((N,3),0)
-   
-   
-   
+   #
+   #!! pos, mom, Lx, Ly, Lz = initialize.init(num_particles, spacings)
+   #
+   dim = np.array([[0,Lx], [0,Ly], [0,Ly]])      # x, y, z
    
    M = int(round(endTime*1.0/dt))            # number of time steps to run
    m = np.full(N, params['m'])                  # masses
