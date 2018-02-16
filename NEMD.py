@@ -53,9 +53,26 @@ def runSimulation(params):
    #
    #!! pos, mom = initialize.init(dim, pistonPos, params['n'])
    #
+   
+   print(params)
    N = 10
    
-   M = int(round(endTime*1.0/dt))         # number of time steps to run
+   pos = np.zeros((N,3))
+
+   # assign positions in all three coordinates
+   pos[:,0] = Lx * np.random.random(N)
+   pos[:,1] = Ly * np.random.random(N)
+   pos[:,2] = Lz * np.random.random(N)
+
+
+   print(pos)
+
+   mom = np.full((N,3),0)
+   
+   
+   
+   
+   M = int(round(endTime*1.0/dt))            # number of time steps to run
    m = np.full(N, params['m'])                  # masses
 
    # time lists for positions, velocities, energies
@@ -74,9 +91,10 @@ def runSimulation(params):
    # compute forces on initial particles
    force = integrator.calc_force(pos, radius, Lx, Ly)
    
-   for i in xrange(1, M):
+   for i in range(1, M):
       # main loop that goes over till given end time
       t = dt*i
+      print(t, end='') ; sys.stdout.flush()
       
       if progress:
          # display progress
@@ -86,12 +104,17 @@ def runSimulation(params):
             sys.stdout.flush()
 
       # lets do some work here...
+      print(" 1", end='') ; sys.stdout.flush()
       # update positions+momentum
-      pos, mom, force = integrator.vel_ver(pos, mom, dt, force, Lx, Ly)
+      pos, mom, force = integrator.vel_ver(pos, mom, pistonPos, pistonVel, dt, force, Lx, Ly, Lz, radius)
       # impose the boundaries
+      print(" 2", end='') ; sys.stdout.flush()
       pos = boundaries.periodic_boundary_position(pos, N, Lx, Ly)
+      print(" 3", end='') ; sys.stdout.flush()
       pistonPos = boundaries.Piston_Position(pistonPos, pistonVel, dt)
+      print(" 4", end='') ; sys.stdout.flush()
       pos, mom = boundaries.Momentum_Mirror(pos, mom, pistonVel, pistonPos, Lz, N)
+      print(" 5", end='') ; sys.stdout.flush()
 
       # compute measurables
       #P = measurables.pressure(N, pos, mom, m, dim)
@@ -110,7 +133,7 @@ def runSimulation(params):
         
       # prepare for next time step
       # === fill in if necessary ===
-  
+      print("")
   
    print("100%. Done!")
 

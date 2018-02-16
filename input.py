@@ -3,6 +3,9 @@ Module for parsing input file and checking input parameters. Also defining initi
 
 (c) 2018 - Tom Dixon, Janez Krek, Devin Lake, Ryan Marcus, Luke Stanek
 '''
+import numpy as np
+from numba import jit
+
 
 def readfile(file, args):
    '''

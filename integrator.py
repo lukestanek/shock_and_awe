@@ -5,9 +5,11 @@ Module for integrator.
 '''  
 import numpy as np
 from numba import jit
+import boundaries
+import sys
 
-@jit()
-def vel_ver(position, momentum, Piston_p, dt, force, x_len, y_len, Mirror_Position, radius):
+#@jit()
+def vel_ver(position, momentum, Piston_p, Piston_Momentum, dt, force, x_len, y_len, Mirror_Position, radius):
     """
     This is the function that will update our position and momentum arrays. It
     assumes a rectangular piston cross-section and it applies boundary conditions
@@ -24,6 +26,9 @@ def vel_ver(position, momentum, Piston_p, dt, force, x_len, y_len, Mirror_Positi
             
       Piston_p (float):
             The current position of the piston
+            
+      Piston_Momentum (float):
+            Momentus of the piston
             
       dt (float):
             The size of the timestep
@@ -58,24 +63,32 @@ def vel_ver(position, momentum, Piston_p, dt, force, x_len, y_len, Mirror_Positi
              
     """
     # Updates the halfstep momentum and the unedited position
+    print("a", end='') ; sys.stdout.flush()
     momentum_half = 0.5*dt*force + momentum
+    print("b", end='') ; sys.stdout.flush()
     new_position = momentum_half*dt + position
 
     # Applies the boundary conditions to the x, y positions
+    print("c", end='') ; sys.stdout.flush()
     size = np.size(position, axis=0)
-    new_position = periodic_boundary_position(new_position , size, x_len, y_len)
+    print("d", end='') ; sys.stdout.flush()
+    new_position = boundaries.periodic_boundary_position(new_position , size, x_len, y_len)
     
     # Applies the momentum mirror to the z positions
-    new_position = Momentum_Mirror(new_position, momentum_half, Piston_Momentum, Piston_p, Mirror_Position, size)
+    print("e", end='') ; sys.stdout.flush()
+    new_position = boundaries.Momentum_Mirror(new_position, momentum_half, Piston_Momentum, Piston_p, Mirror_Position, size)
 
     # Updates the final force and momentum
+    print("f", end='') ; sys.stdout.flush()
     new_force = calc_force(new_position, radius, x_len, y_len)
+    print("g", end='') ; sys.stdout.flush()
     new_momentum = (0.5*dt*new_force + momentum_half)
+    print("h", end='') ; sys.stdout.flush()
 
     return new_position, new_momentum, new_force
   
   
-@jit()
+#@jit()
 def calc_force(position, radius, x_len, y_len):
     """
     This is the function that will calculate the forces for the 
@@ -106,16 +119,17 @@ def calc_force(position, radius, x_len, y_len):
     # Creates force array
     size = np.size(position, axis=0)
     force = np.zeros((size, 3))
+    radius2 = radius**2
 
     # Calculates distances arrays using the periodic boundary conditions
-    x_diff, y_diff, z_diff = periodic_boundary_force(position, size, x_len, y_len)
+    x_diff, y_diff, z_diff = boundaries.periodic_boundary_force(position, size, x_len, y_len)
     r_tilde = x_diff**2 + y_diff**2 + z_diff**2
     
     for i in range(size-1):
         for j in range(i+1,size):
           
             # If particle is in poor man's radius, calculates force
-            if r_tilde[i][j] <= radius**2:
+            if r_tilde[i][j] <= radius2:
                 S = 6*( 2*(r_tilde[i][j]**-7) - (r_tilde[i][j]**-4) )
                 Sx,Sy,Sz = S*x_diff[i][j],S*y_diff[i][j],S*z_diff[i][j]
 
