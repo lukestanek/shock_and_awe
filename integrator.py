@@ -7,7 +7,7 @@ import numpy as np
 from numba import jit
 
 @jit()
-def vel_ver(position, momentum, Piston_p, Piston_Momentum, dt, force, x_len, y_len, Mirror_Position, radius):
+def vel_ver(position, momentum, Piston_p, dt, force, x_len, y_len, Mirror_Position, radius):
     """
     This is the function that will update our position and momentum arrays. It
     assumes a rectangular piston cross-section and it applies boundary conditions
@@ -22,6 +22,9 @@ def vel_ver(position, momentum, Piston_p, Piston_Momentum, dt, force, x_len, y_l
       momentum (numpy array with size num_particles x 3):
             A numpy array containing the momentum of all the particles
             
+      Piston_p (float):
+            The current position of the piston
+            
       dt (float):
             The size of the timestep
       
@@ -30,23 +33,30 @@ def vel_ver(position, momentum, Piston_p, Piston_Momentum, dt, force, x_len, y_l
             
       x_len (float):
             The length of the box in the x direction. Assumes that the
-            box starts at x = 0 and goes in the positive direction.
+            box starts at x = 0 and goes in the positive direction
     
       y_len (float):
              The length of the box in the y direction. Assumes that the
-             box starts at y = 0 and goes in the positive direction.
+             box starts at y = 0 and goes in the positive direction
+          
+      Mirror_Position (float):
+            Position of the back of the cell. Assumes that the box starts
+            at the z = 0 and goes in the positive direction
+            
+      radius (float):
+            The radius of the sphere that each particle interacts with
             
     Outputs:
       new_position (numpy array with size num_particles x 3):
-              A numpy array containing the new positions of all the particles
+             A numpy array containing the new positions of all the particles
+             
       new_momentum (numpy array with size num_particles x 3):
-              A numpy array containing the new momentum of all the particles
+             A numpy array containing the new momentum of all the particles
+             
       new_force (numpy array with size num_particles x 3):
-              A numpy array containing the new force vector for each particle
+             A numpy array containing the new force vector for each particle
+             
     """
-    # Updates the Piston Position
-    Piston_p = Piston_Position(Piston_p, Piston_Momentum, dt)
-    
     # Updates the halfstep momentum and the unedited position
     momentum_half = 0.5*dt*force + momentum
     new_position = momentum_half*dt + position
@@ -62,7 +72,7 @@ def vel_ver(position, momentum, Piston_p, Piston_Momentum, dt, force, x_len, y_l
     new_force = calc_force(new_position, radius, x_len, y_len)
     new_momentum = (0.5*dt*new_force + momentum_half)
 
-    return new_position, new_momentum, new_force, Piston_p
+    return new_position, new_momentum, new_force
   
   
 @jit()
