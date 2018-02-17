@@ -22,7 +22,7 @@ def initilization(N_part,spacing):
     
     '''
     
-    # Number of particles in eaxh direction
+    # Number of particles in each direction
     Nx, Ny, Nz = N_part
     
     # Total number of particles

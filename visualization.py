@@ -28,7 +28,7 @@ def visualize(pos,mom):
     ax.set_xlabel('z')
     ax.set_ylabel('x')
     ax.set_zlabel('y')
-    plt.show()
+    plt.show(block=False)
     
     # Plotting Momenta
     fig2 = plt.figure(figsize=(8,8))

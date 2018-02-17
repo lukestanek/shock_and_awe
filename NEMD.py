@@ -10,7 +10,7 @@ import os
 import numpy as np
 import argparse
 
-import boundaries, input, initialization, integrator, measurables, output
+import boundaries, input, initialization, integrator, measurables, output, visualization
 
 def parse_args():
    '''
@@ -52,13 +52,14 @@ def runSimulation(params):
 
    print(params)
    
-   #
-   #!! pos, mom, Lx, Ly, Lz = initialize.init(num_particles, spacings)
-   #
+   # initialize particle positions and momentums; also get system length
+   pos, mom, [Lx, Ly, Lz] = initialization.initilization(num_particles, spacing)
+   N = len(pos)
+   print("System dimensions (x,y,z): {0}, {1}, {2}".format(Lx, Ly, Lz))
    dim = np.array([[0,Lx], [0,Ly], [0,Ly]])      # x, y, z
    
    M = int(round(endTime*1.0/dt))            # number of time steps to run
-   m = np.full(N, params['m'])                  # masses
+   m = np.full(N, params['m'])               # masses
 
    # time lists for positions, velocities, energies
    posHist = np.zeros((M,N,3))
@@ -70,47 +71,52 @@ def runSimulation(params):
    progressList = [int(el) for el in M*np.linspace(0,1.,21)]
    progressList.pop(0)
 
+   posHist[0] = pos
+   momHist[0] = mom
+
+
    if progress:
-      print("==> Simulation run\n - computing...",)
+      print("==> Simulation run\n - computing...",end='')
       
    # compute forces on initial particles
    force = integrator.calc_force(pos, radius, Lx, Ly)
-   
+
    for i in range(1, M):
       # main loop that goes over till given end time
       t = dt*i
-      print(t, end='') ; sys.stdout.flush()
       
       if progress:
          # display progress
          if( i == progressList[0] ):
-            print("{0:d}%...".format(int((i)*100.0/M)),)
+            print("{0:d}%...".format(int((i)*100.0/M)),end='', flush=True)
             progressList.pop(0)
-            sys.stdout.flush()
 
       # lets do some work here...
-      print(" 1", end='') ; sys.stdout.flush()
       # update positions+momentum
+      print("-1", end='', flush=True)
       pos, mom, force = integrator.vel_ver(pos, mom, pistonPos, pistonVel, dt, force, Lx, Ly, Lz, radius)
       # impose the boundaries
-      print(" 2", end='') ; sys.stdout.flush()
+      print("-2", end='', flush=True)
       pos = boundaries.periodic_boundary_position(pos, N, Lx, Ly)
-      print(" 3", end='') ; sys.stdout.flush()
+      print("-3", end='', flush=True)
       pistonPos = boundaries.Piston_Position(pistonPos, pistonVel, dt)
-      print(" 4", end='') ; sys.stdout.flush()
+      print("-4", end='', flush=True)
       pos, mom = boundaries.Momentum_Mirror(pos, mom, pistonVel, pistonPos, Lz, N)
-      print(" 5", end='') ; sys.stdout.flush()
+      print("-5", end='', flush=True)
 
       # compute measurables
+      KE = measurables.calc_kinetic(mom)
       #P = measurables.pressure(N, pos, mom, m, dim)
-      #T = measurables.temperature(N, pos, mom, m, dim)
+      T = measurables.calc_temp(mom)
+      print("-6", end='', flush=True)
+
 
       # save values in time history lists
       posHist[i] = pos
       momHist[i] = mom
       KEhist[i] = KE
-      PEhist[i] = PE
-      Ehist[i] = E
+#       PEhist[i] = PE
+#       Ehist[i] = KE+PE
 
       # output values (?) 
       #??? into which file
@@ -126,6 +132,16 @@ def runSimulation(params):
    #output.write_4_movie()
    #??? we have to define an output file
    #output.write_all_end(posHist, momHist, KEhist, PEhist, Ehist)
+
+
+
+   output.write_pos_vel_hist("0_pos_vel_KE.txt", posHist, momHist, KEhist)
+
+   # visualize initial and end positions 
+   visualization.visualize(posHist[0],momHist[0])
+   visualization.visualize(posHist[-1],momHist[-1])
+
+
 
    return
 

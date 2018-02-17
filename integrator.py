@@ -8,7 +8,7 @@ from numba import jit
 import boundaries
 import sys
 
-#@jit()
+@jit()
 def vel_ver(position, momentum, Piston_p, Piston_Momentum, dt, force, x_len, y_len, Mirror_Position, radius):
     """
     This is the function that will update our position and momentum arrays. It
@@ -63,32 +63,29 @@ def vel_ver(position, momentum, Piston_p, Piston_Momentum, dt, force, x_len, y_l
              
     """
     # Updates the halfstep momentum and the unedited position
-    print("a", end='') ; sys.stdout.flush()
     momentum_half = 0.5*dt*force + momentum
-    print("b", end='') ; sys.stdout.flush()
     new_position = momentum_half*dt + position
 
     # Applies the boundary conditions to the x, y positions
-    print("c", end='') ; sys.stdout.flush()
     size = np.size(position, axis=0)
-    print("d", end='') ; sys.stdout.flush()
+    print("a", end='', flush=True)
     new_position = boundaries.periodic_boundary_position(new_position , size, x_len, y_len)
     
     # Applies the momentum mirror to the z positions
-    print("e", end='') ; sys.stdout.flush()
-    new_position = boundaries.Momentum_Mirror(new_position, momentum_half, Piston_Momentum, Piston_p, Mirror_Position, size)
+    print("b", end='', flush=True)
+    new_position, momentum_half = boundaries.Momentum_Mirror(new_position, momentum_half, Piston_Momentum, Piston_p, Mirror_Position, size)
 
     # Updates the final force and momentum
-    print("f", end='') ; sys.stdout.flush()
+    print("c", end='', flush=True)
     new_force = calc_force(new_position, radius, x_len, y_len)
-    print("g", end='') ; sys.stdout.flush()
+    print("d", end='', flush=True)
     new_momentum = (0.5*dt*new_force + momentum_half)
-    print("h", end='') ; sys.stdout.flush()
+    print("e", end='', flush=True)
 
     return new_position, new_momentum, new_force
   
   
-#@jit()
+@jit()
 def calc_force(position, radius, x_len, y_len):
     """
     This is the function that will calculate the forces for the 
@@ -124,7 +121,7 @@ def calc_force(position, radius, x_len, y_len):
     # Calculates distances arrays using the periodic boundary conditions
     x_diff, y_diff, z_diff = boundaries.periodic_boundary_force(position, size, x_len, y_len)
     r_tilde = x_diff**2 + y_diff**2 + z_diff**2
-    
+
     for i in range(size-1):
         for j in range(i+1,size):
           

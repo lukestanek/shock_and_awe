@@ -3,11 +3,10 @@ Module for boundaries.
 
 (c) 2018 - Tom Dixon, Janez Krek, Devin Lake, Ryan Marcus, Luke Stanek
 '''
-
 import numpy as np
 from numba import jit
 
-#@jit()
+@jit()
 def periodic_boundary_force(pos, n_par, x_len, y_len):
     """
     This function applies the periodic boundaries to the
@@ -73,14 +72,14 @@ def periodic_boundary_force(pos, n_par, x_len, y_len):
                     else:
                         x_diff[par_1, par_2] += x_len 
                         
-                y_diff[par_1, par_2] = pos[par_1, 0] - pos[par_2, 0]
+                y_diff[par_1, par_2] = pos[par_1, 1] - pos[par_2, 1]
                 while abs(y_diff[par_1, par_2]) > y_len:
                     if y_diff[par_1, par_2] > 0:
                         y_diff[par_1, par_2] -= y_len
                     else:
                         y_diff[par_1, par_2] += y_len 
 
-                z_diff[par_1, par_2] = pos[par_1, 0] - pos[par_2, 0]
+                z_diff[par_1, par_2] = pos[par_1, 2] - pos[par_2, 2]
 
     return(x_diff, y_diff, z_diff)
 
@@ -114,14 +113,13 @@ def periodic_boundary_position(pos , n_par, x_len, y_len):
     conditions.
     '''
     # Creates an array to store all the new positions
-#     new_pos = np.zeros_like(pos)
-    print(n_par)
+    new_pos = np.zeros_like(pos)
+    print(np.min(pos), np.max(pos))
     # Apply periodic boundary conditions. We are not applying periodic
     # boundaries to the z component
     
     for par in range(n_par):
         # x component
-        print(pos[par])
         while pos[par,0] > x_len:
             pos[par, 0] -= x_len
         while pos[par, 0] < 0:
@@ -134,9 +132,9 @@ def periodic_boundary_position(pos , n_par, x_len, y_len):
             pos[par, 1] += y_len
             
         # Stores the new position    
-#         new_pos[par] = pos[par]
-#     return(new_pos)
-    return pos
+        new_pos[par] = pos[par]
+    return(new_pos)
+
 
 @jit()
 def Momentum_Mirror(Position, Momentum, Piston_Momentum, Piston_Position, Mirror_Position, N_Par):

@@ -42,7 +42,6 @@ def readfile(file, args):
    
    for i, line in enumerate(lines):
       # parse all lines
-      print(line)
       if line[0] is '#':
          # skip comments
          pass
@@ -57,8 +56,13 @@ def readfile(file, args):
             params['piston']['z0'] = vals[0]
             params['piston']['v0'] = vals[1]
             
-         elif fld == 'N' or fld == 'spacing':
-            # number of particles in the system or spacing have 3 values: Nx, Ny, Nz / dx, dy, dz
+         elif fld == 'N':
+            #  number of particles in the system has 3 values: Nx, Ny, Nz
+            vals = [float(el.strip()) for el in restLine.split(",")]
+            params[fld] = [ int(vals[0]), int(vals[1]), int(vals[2]) ]
+
+         elif fld == 'spacing':
+            # spacing has 3 values: dx, dy, dz
             vals = [float(el.strip()) for el in restLine.split(",")]
             params[fld] = [ float(vals[0]), float(vals[1]), float(vals[2]) ]
 
