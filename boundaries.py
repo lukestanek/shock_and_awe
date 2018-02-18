@@ -62,24 +62,44 @@ def periodic_boundary_force(pos, n_par, x_len, y_len):
                 x_diff[par_1, par_2] = 0
                 x_diff[par_1, par_2] = 0
 
-            # Find x, y, and z distances and applying periodic boundaries
-            # z components do not get periodic boundaries
+            # Find x, y, and z distances
             else:
+                # Find x, y, and z distances
                 x_diff[par_1, par_2] = pos[par_1, 0] - pos[par_2, 0]
+                y_diff[par_1, par_2] = pos[par_1, 1] - pos[par_2, 1]
+                z_diff[par_1, par_2] = pos[par_1, 2] - pos[par_2, 2]
+                
+                # Applies minimum distance boundary
+                if abs(x_diff[par_1, par_2]) < 0.6:
+                    if x_diff[par_1, par_2] > 0:
+                        x_diff[par_1, par_2] = 0.6
+                    else:
+                        x_diff[par_1, par_2] = -0.6
+                        
+                if abs(y_diff[par_1, par_2]) < 0.6:
+                    if y_diff[par_1, par_2] > 0:
+                        y_diff[par_1, par_2] = 0.6
+                    else:
+                        y_diff[par_1, par_2] = -0.6
+                        
+                if abs(z_diff[par_1, par_2]) < 0.6:
+                    if z_diff[par_1, par_2] > 0:
+                        z_diff[par_1, par_2] = 0.6
+                    else:
+                        z_diff[par_1, par_2] = -0.6
+                        
+                # Applies periodic boundary condition
                 if abs(x_diff[par_1, par_2]) > x_len:
                     if x_diff[par_1, par_2] > 0:
                         x_diff[par_1, par_2] -= x_len
                     else:
                         x_diff[par_1, par_2] += x_len 
                         
-                y_diff[par_1, par_2] = pos[par_1, 1] - pos[par_2, 1]
                 if abs(y_diff[par_1, par_2]) > y_len:
                     if y_diff[par_1, par_2] > 0:
                         y_diff[par_1, par_2] -= y_len
                     else:
                         y_diff[par_1, par_2] += y_len 
-
-                z_diff[par_1, par_2] = pos[par_1, 2] - pos[par_2, 2]
 
     return(x_diff, y_diff, z_diff)
 
