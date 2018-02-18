@@ -66,14 +66,14 @@ def periodic_boundary_force(pos, n_par, x_len, y_len):
             # z components do not get periodic boundaries
             else:
                 x_diff[par_1, par_2] = pos[par_1, 0] - pos[par_2, 0]
-                while abs(x_diff[par_1, par_2]) > x_len:
+                if abs(x_diff[par_1, par_2]) > x_len:
                     if x_diff[par_1, par_2] > 0:
                         x_diff[par_1, par_2] -= x_len
                     else:
                         x_diff[par_1, par_2] += x_len 
                         
                 y_diff[par_1, par_2] = pos[par_1, 1] - pos[par_2, 1]
-                while abs(y_diff[par_1, par_2]) > y_len:
+                if abs(y_diff[par_1, par_2]) > y_len:
                     if y_diff[par_1, par_2] > 0:
                         y_diff[par_1, par_2] -= y_len
                     else:
@@ -113,27 +113,20 @@ def periodic_boundary_position(pos , n_par, x_len, y_len):
     conditions.
     '''
     # Creates an array to store all the new positions
-    new_pos = np.zeros_like(pos)
     print(np.min(pos), np.max(pos))
     # Apply periodic boundary conditions. We are not applying periodic
     # boundaries to the z component
     
     for par in range(n_par):
         # x component
-        while pos[par,0] > x_len:
-            pos[par, 0] -= x_len
-        while pos[par, 0] < 0:
-            pos[par, 0] += x_len
+        if pos[par,0] > x_len or pos[par, 0] < 0:
+            pos[par,0] = pos[par, 0] % x_len
             
         # y component    
-        while pos[par,1] > y_len:
-            pos[par, 1] -= y_len
-        while pos[par, 1] < 0:
-            pos[par, 1] += y_len
+        if pos[par,1] > y_len or pos[par, 1] < 0:
+            pos[par,1] = pos[par, 1] % y_len
             
-        # Stores the new position    
-        new_pos[par] = pos[par]
-    return(new_pos)
+    return pos
 
 
 @jit()
@@ -161,11 +154,13 @@ def Momentum_Mirror(Position, Momentum, Piston_Momentum, Piston_Position, Mirror
         Particle_Momentum = Momentum[particle]
         
         if Particle_Position[2] < Piston_Position:
-            Particle_Position[2] = Piston_Position + (Piston_Position - Particle_Position[2])
-            Particle_Momentum[2] = Piston_Momentum - Particle_Momentum[2]
+            #Particle_Position[2] = Piston_Position + (Piston_Position - Particle_Position[2])
+            Particle_Position[2] -= -2*Piston_Position
+            Particle_Momentum[2] -= -Piston_Momentum
             
         elif Particle_Position[2] > Mirror_Position:
-            Particle_Position[2] = Mirror_Position - (Particle_Position[2] - Mirror_Position)
+            #Particle_Position[2] = Mirror_Position - (Particle_Position[2] - Mirror_Position)
+            Particle_Position[2] -= -2*Mirror_Position
             Particle_Momentum[2] = -(Particle_Momentum[2])  
             
     return Position,Momentum
