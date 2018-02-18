@@ -117,7 +117,6 @@ def runSimulation(params):
       posHist[i] = pos
       momHist[i] = mom
       KEhist[i] = KE
-      Z_boundaries[i]
 #       PEhist[i] = PE
 #       Ehist[i] = KE+PE
 
