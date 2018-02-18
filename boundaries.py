@@ -130,24 +130,21 @@ def periodic_boundary_position(pos , n_par, x_len, y_len):
 
 
 @jit()
-def Momentum_Mirror(Position, Momentum, Piston_Momentum, Piston_Position, Mirror_Position, N_Par):
+def Momentum_Mirror(Position, Momentum, Piston_Momentum, Piston_Position, Mirror_Position, dt, N_Par):
     #This is the function for the momentum mirror and the Piston. It takes in: 
     
     #* Particle_Position = This should be a np.array with dimensions (N, 3).
-    
     #* Particle_Momentum = This should be a np.array with dimensions (N, 3).
-    
     #* Piston_Momentum = This should be a float.
-    
     #* Piston_Position = This will be a float that is updated after every loop.
-    
-    #* Momentum_Mirror_Position = This should also be a float.
-    
+    #* Mirror_Position = This should also be a float.
+    #* dt = time step
     #* Number of particles = This should be a Constant Integer.
     
    # This function will check each particles z position, since that is the dimension we chose, 
    # and update the new z position if the position violates our conditions. Finally the function 
    # returns the Particles Positions and Momentums.
+    Piston_next_pos = calc_Piston_Position(Piston_Position, Piston_Momentum, dt)
     
     for particle in range(N_Par):
         Particle_Position = Position[particle]
@@ -155,7 +152,7 @@ def Momentum_Mirror(Position, Momentum, Piston_Momentum, Piston_Position, Mirror
         
         if Particle_Position[2] < Piston_Position:
             #Particle_Position[2] = Piston_Position + (Piston_Position - Particle_Position[2])
-            Particle_Position[2] -= -2*Piston_Position
+            Particle_Position[2] += 2*(Piston_Position-Particle_Position[2]) + Piston_next_pos
             Particle_Momentum[2] -= -Piston_Momentum
             
         elif Particle_Position[2] > Mirror_Position:
@@ -167,7 +164,7 @@ def Momentum_Mirror(Position, Momentum, Piston_Momentum, Piston_Position, Mirror
 
 
 @jit()
-def Piston_Position(Piston_Position, Piston_Velocity, dt):
+def calc_Piston_Position(Piston_Position, Piston_Velocity, dt):
     #This function is extremely straight forward, the function takes in:
     
     #* Piston_Position = This should be Float.

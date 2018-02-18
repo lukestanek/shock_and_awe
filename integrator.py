@@ -73,7 +73,7 @@ def vel_ver(position, momentum, Piston_p, Piston_Momentum, dt, force, x_len, y_l
     
     # Applies the momentum mirror to the z positions
     print("b", end='', flush=True)
-    position, momentum = boundaries.Momentum_Mirror(position, momentum, Piston_Momentum, Piston_p, Mirror_Position, size)
+    position, momentum = boundaries.Momentum_Mirror(position, momentum, Piston_Momentum, Piston_p, Mirror_Position, dt, size)
 
     # Updates the final force and momentum
     print("c", end='', flush=True)
