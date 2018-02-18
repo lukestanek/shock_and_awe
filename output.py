@@ -23,7 +23,7 @@ def write_pos_vel_hist(filename, pos, mom, KE):
    Msteps = len(pos)
    N = len(pos[0])
 
-   fp = open(filename, "w")
+   fp = open(filename, "wb")
    
    print(np.shape(pos[0]), np.shape(mom[0]), np.shape(KE[0]))
    for i in range(Msteps):
