@@ -79,7 +79,7 @@ def vel_ver(position, momentum, Piston_p, Piston_Momentum, dt, force, x_len, y_l
     print("c", end='', flush=True)
     force = calc_force(position, radius, x_len, y_len)
     print("d", end='', flush=True)
-    nmomentum += 0.5*dt*force
+    momentum += 0.5*dt*force
     print("e", end='', flush=True)
 
     return position, momentum, force
