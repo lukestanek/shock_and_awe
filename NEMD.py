@@ -138,8 +138,8 @@ def runSimulation(params):
    output.write_pos_vel_hist("0_pos_vel_KE.txt", posHist, momHist, KEhist)
 
    # visualize initial and end positions 
-   visualization.visualize(posHist[0],momHist[0])
-   visualization.visualize(posHist[-1],momHist[-1])
+   #visualization.visualize(posHist[0],momHist[0])
+   #visualization.visualize(posHist[-1],momHist[-1])
 
 
 
