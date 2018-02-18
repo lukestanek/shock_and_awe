@@ -52,19 +52,19 @@ def vel_ver(position, momentum, Piston_p, Piston_Momentum, dt, force, x_len, y_l
             The radius of the sphere that each particle interacts with
             
     Outputs:
-      new_position (numpy array with size num_particles x 3):
+      position (numpy array with size num_particles x 3):
              A numpy array containing the new positions of all the particles
              
-      new_momentum (numpy array with size num_particles x 3):
+      momentum (numpy array with size num_particles x 3):
              A numpy array containing the new momentum of all the particles
              
-      new_force (numpy array with size num_particles x 3):
+      force (numpy array with size num_particles x 3):
              A numpy array containing the new force vector for each particle
              
     """
     # Updates the halfstep momentum and the unedited position
     momentum += 0.5*dt*force
-    position += momentum_half*dt
+    position += momentum*dt
 
     # Applies the boundary conditions to the x, y positions
     size = np.size(position, axis=0)
