@@ -56,12 +56,13 @@ def runSimulation(params):
    pos, mom, [Lx, Ly, Lz] = initialization.initilization(num_particles, spacing)
    N = len(pos)
    print("System dimensions (x,y,z): {0}, {1}, {2}".format(Lx, Ly, Lz))
-   dim = np.array([[0,Lx], [0,Ly], [0,Ly]])      # x, y, z
+   dim = np.array([[0,Lx], [0,Ly], [0,Lz]])      # x, y, z
    
    M = int(round(endTime*1.0/dt))            # number of time steps to run
    m = np.full(N, params['m'])               # masses
 
    # time lists for positions, velocities, energies
+   pistHist = np.zeros(M)
    posHist = np.zeros((M,N,3))
    momHist = np.zeros_like(posHist)
    KEhist = np.zeros((M, N))
@@ -112,6 +113,7 @@ def runSimulation(params):
 
 
       # save values in time history lists
+      pistHist[i] = pistonPos #z component of pistion
       posHist[i] = pos
       momHist[i] = mom
       KEhist[i] = KE
@@ -135,7 +137,7 @@ def runSimulation(params):
 
 
 
-   output.write_pos_vel_hist("0_pos_vel_KE.txt", posHist, momHist, KEhist)
+   output.write_pos_vel_hist("0_pos_vel_KE.txt", posHist, momHist, KEhist, pistHist, Lx, Ly, Lz)
 
    # visualize initial and end positions 
    #visualization.visualize(posHist[0],momHist[0])
