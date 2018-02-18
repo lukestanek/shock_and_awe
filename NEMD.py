@@ -99,9 +99,9 @@ def runSimulation(params):
       print("-2", end='', flush=True)
       pos = boundaries.periodic_boundary_position(pos, N, Lx, Ly)
       print("-3", end='', flush=True)
-      pistonPos = boundaries.Piston_Position(pistonPos, pistonVel, dt)
+      pistonPos = boundaries.calc_Piston_Position(pistonPos, pistonVel, dt)
       print("-4", end='', flush=True)
-      pos, mom = boundaries.Momentum_Mirror(pos, mom, pistonVel, pistonPos, Lz, N)
+      pos, mom = boundaries.Momentum_Mirror(pos, mom, pistonVel, pistonPos, Lz, dt, N)
       print("-5", end='', flush=True)
 
       # compute measurables
@@ -115,6 +115,7 @@ def runSimulation(params):
       posHist[i] = pos
       momHist[i] = mom
       KEhist[i] = KE
+      Z_boundaries[i]
 #       PEhist[i] = PE
 #       Ehist[i] = KE+PE
 
