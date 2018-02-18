@@ -63,26 +63,26 @@ def vel_ver(position, momentum, Piston_p, Piston_Momentum, dt, force, x_len, y_l
              
     """
     # Updates the halfstep momentum and the unedited position
-    momentum_half = 0.5*dt*force + momentum
-    new_position = momentum_half*dt + position
+    momentum += 0.5*dt*force
+    position += momentum_half*dt
 
     # Applies the boundary conditions to the x, y positions
     size = np.size(position, axis=0)
     print("a", end='', flush=True)
-    new_position = boundaries.periodic_boundary_position(new_position , size, x_len, y_len)
+    position = boundaries.periodic_boundary_position(position , size, x_len, y_len)
     
     # Applies the momentum mirror to the z positions
     print("b", end='', flush=True)
-    new_position, momentum_half = boundaries.Momentum_Mirror(new_position, momentum_half, Piston_Momentum, Piston_p, Mirror_Position, size)
+    position, momentum = boundaries.Momentum_Mirror(position, momentum, Piston_Momentum, Piston_p, Mirror_Position, size)
 
     # Updates the final force and momentum
     print("c", end='', flush=True)
-    new_force = calc_force(new_position, radius, x_len, y_len)
+    force = calc_force(position, radius, x_len, y_len)
     print("d", end='', flush=True)
-    new_momentum = (0.5*dt*new_force + momentum_half)
+    nmomentum += 0.5*dt*force
     print("e", end='', flush=True)
 
-    return new_position, new_momentum, new_force
+    return position, momentum, force
   
   
 @jit()
