@@ -5,81 +5,92 @@ Module for parsing input file and checking input parameters. Also defining initi
 '''
 import numpy as np
 from numba import jit
-
+import argparse
 
 def readfile(file, args):
-   '''
-   Read input file given by filename and other arguments. If same argument if given from command line, use that one, otherwise value from input file is returned.
-   
-   Args:
-      file (string): input file
-      args (object): other arguments/parameters given from command line
-      
-   Returns:
-      (dict): system parameters -  
-                     params = { 'N': [1, 1, 1],                         # number of particles
-                                'spacing': [1.0, 1.0, 1.0],            # initial spacing of particles
-                                'm': 0.0,                               # mass of particle
-                                'dt': 1e-3, 'endTime': 10,              # time step, end time
-                                'piston': {'z0': 0.0, 'v0': 1.0},       # piston init data
-                                'eps': 1.0, 'sigma': 1.0,               # LennardJones potential parameters
-                                'radius': 0.1                           # cutoff radius used in force calculation
-                              }
-   '''
-   # define initialized dictionary or system parameters
-   params = { 'N': [1, 1, 1],                         # number of particles
-              'spacing': [1.0, 1.0, 1.0],            # initial spacing of particles
-              'm': 0.0,                               # mass of particle
-              'dt': 1e-3, 'endTime': 10,              # time step, end time
-              'piston': {'z0': 0.0, 'v0': 1.0},       # piston init data
-              'eps': 1.0, 'sigma': 1.0,               # LennardJones potential parameters
-              'radius': 0.1                           # cutoff radius used in force calculation
-            }
-   # read file into list ot lines
-   fh = open(file, "r")
-   lines = fh.readlines()
-   fh.close()
-   
-   for i, line in enumerate(lines):
-      # parse all lines
-      if line[0] is '#':
-         # skip comments
-         pass
-      
-      elif "=" in line:
-         #  extract values from file
-         fld, restLine = [el.strip() for el in line.split("=")]
-
-         if fld == 'piston':
-            # piston has 2 values: z0, v0
-            vals = [float(el.strip()) for el in restLine.split(",")]
-            params['piston']['z0'] = vals[0]
-            params['piston']['v0'] = vals[1]
+    '''
+    Read input file given by filename and other arguments. If same argument if given from command line, use that one, otherwise value from input file is returned.
+    
+    Args:
+       file (string): input file
+       args (object): other arguments/parameters given from command line
+       
+    Returns:
+       (dict): system parameters -  
+                      params = { 'N': [1, 1, 1],                         # number of particles
+                                 'spacing': [1.0, 1.0, 1.0],            # initial spacing of particles
+                                 'm': 0.0,                               # mass of particle
+                                 'dt': 1e-3, 'endTime': 10,              # time step, end time
+                                 'piston': {'z0': 0.0, 'v0': 1.0},       # piston init data
+                                 'eps': 1.0, 'sigma': 1.0,               # LennardJones potential parameters
+                                 'radius': 0.1                           # cutoff radius used in force calculation
+                               }
+    '''
+    # define initialized dictionary or system parameters
+    params = { 'N': [1, 1, 1],                         # number of particles
+               'spacing': [1.0, 1.0, 1.0],            # initial spacing of particles
+               'm': 0.0,                               # mass of particle
+               'dt': 1e-3, 'endTime': 10,              # time step, end time
+               'piston': {'z0': 0.0, 'v0': 1.0},       # piston init data
+               'eps': 1.0, 'sigma': 1.0,               # LennardJones potential parameters
+               'radius': 0.1                           # cutoff radius used in force calculation
+             }
+    # read file into list ot lines
+    fh = open(file, "r")
+    lines = fh.readlines()
+    fh.close()
+    
+    cli_params = vars(args)
+    print(args, type(args))
+#     import sys
+#     sys.exit()
+    
+    for i, line in enumerate(lines):
+        # parse all lines
+        if line[0] is '#':
+            # skip comments
+            pass
             
-         elif fld == 'N':
-            #  number of particles in the system has 3 values: Nx, Ny, Nz
-            vals = [float(el.strip()) for el in restLine.split(",")]
-            params[fld] = [ int(vals[0]), int(vals[1]), int(vals[2]) ]
+        elif "=" in line:
+            #  extract values from file
+            fld, restLine = [el.strip() for el in line.split("=")]
+            
+            if fld == 'piston':
+                # piston has 2 values: z0, v0
+                vals = [float(el.strip()) for el in restLine.split(",")]
+                params['piston']['z0'] = vals[0]
+                params['piston']['v0'] = vals[1]
+                
+            elif fld == 'N':
+                #  number of particles in the system has 3 values: Nx, Ny, Nz
+                vals = [float(el.strip()) for el in restLine.split(",")]
+                params[fld] = [ int(vals[0]), int(vals[1]), int(vals[2]) ]
+                
+            elif fld == 'spacing':
+                # spacing has 3 values: dx, dy, dz
+                vals = [float(el.strip()) for el in restLine.split(",")]
+                params[fld] = [ float(vals[0]), float(vals[1]), float(vals[2]) ]
+                
+            elif fld in ['m', 'dt', 'endTime', 'eps', 'sigma', 'radius']:
+                # parameters that take only one value
+                params[fld] = float(restLine.strip())
+                
+            else:
+                print("Unknown parameter {0} in line {1}".format(line, i))
 
-         elif fld == 'spacing':
-            # spacing has 3 values: dx, dy, dz
-            vals = [float(el.strip()) for el in restLine.split(",")]
-            params[fld] = [ float(vals[0]), float(vals[1]), float(vals[2]) ]
-
-         elif fld in ['m', 'dt', 'endTime', 'eps', 'sigma', 'radius']:
-            # parameters that take only one value
-            params[fld] = float(restLine.strip())
-         
-            if type(args) == object and args.getattr(fld) != -1:
+            if fld in cli_params.keys() and cli_params[fld] != -1:
                # use value given in CLI
-               params[fld] = float(args.getattr(fld))
-         else:
-            print("Unknown parameter {0} in line {1}".format(line, i))
-         
-      else: 
-         # skip it
-         pass
-
-   return params
+               print("Set {0} to {1} (CLI param)".format(fld, cli_params[fld]))
+               params[fld] = float(cli_params[fld])
+        
+        else: 
+           # skip it
+           pass
+    
+    
+      
+    
+    
+    return params
 
 
