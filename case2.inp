@@ -1,0 +1,9 @@
+# system dimension
+N = 3, 3, 15
+spacing = 1.1, 1.1, 1.1
+m = 1.0
+dt = 1e-3
+endTime = 10
+piston =  0.0, 0.5, 5
+eps = 1.0
+sigma = 1.0

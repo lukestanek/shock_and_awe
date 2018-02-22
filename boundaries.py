@@ -2,11 +2,15 @@
 Module for boundaries.
 
 (c) 2018 - Tom Dixon, Janez Krek, Devin Lake, Ryan Marcus, Luke Stanek
+
+History:
+v0.1    - TD, RM, 2018-02 -- init
+v0.2    - JK, 2018-02-22 -- added piston movement end time; added (nopython=True) to jit()
 '''
 import numpy as np
 from numba import jit
 
-@jit()
+@jit(nopython=True)
 def periodic_boundary_force(pos, n_par, x_len, y_len):
     """
     This function applies the periodic boundaries to the
@@ -45,9 +49,13 @@ def periodic_boundary_force(pos, n_par, x_len, y_len):
     
     # Initialize the distances in positions arrays.
     
-    x_diff = np.zeros([n_par,n_par])
-    y_diff = np.zeros([n_par,n_par])
-    z_diff = np.zeros([n_par,n_par])
+#     x_diff = np.zeros([n_par,n_par])
+#     y_diff = np.zeros([n_par,n_par])
+#     z_diff = np.zeros([n_par,n_par])
+    # JK, 2018-02-22; nopython=True
+    x_diff = np.zeros((n_par,n_par))
+    y_diff = np.zeros((n_par,n_par))
+    z_diff = np.zeros((n_par,n_par))
 
     for par_1 in range(n_par):
         for par_2 in range(n_par):
@@ -58,52 +66,52 @@ def periodic_boundary_force(pos, n_par, x_len, y_len):
                 z_diff[par_1, par_2] = -z_diff[par_2, par_1]
     			
             elif par_1 == par_2:
-                	x_diff[par_1, par_2] = 0
-                	x_diff[par_1, par_2] = 0
-                	x_diff[par_1, par_2] = 0
+                x_diff[par_1, par_2] = 0
+                x_diff[par_1, par_2] = 0
+                x_diff[par_1, par_2] = 0
                 
                 # Find x, y, and z distances
             else:
-                	# Find x, y, and z distances
-                	x_diff[par_1, par_2] = pos[par_1, 0] - pos[par_2, 0]
-                	y_diff[par_1, par_2] = pos[par_1, 1] - pos[par_2, 1]
-                	z_diff[par_1, par_2] = pos[par_1, 2] - pos[par_2, 2]
-                	
-                	# Applies minimum distance boundary
-                	if abs(x_diff[par_1, par_2]) < 0.6:
-                		if x_diff[par_1, par_2] > 0:
-                			x_diff[par_1, par_2] = 0.6
-                		else:
-                			x_diff[par_1, par_2] = -0.6
-                			
-                	if abs(y_diff[par_1, par_2]) < 0.6:
-                		if y_diff[par_1, par_2] > 0:
-                			y_diff[par_1, par_2] = 0.6
-                		else:
-                			y_diff[par_1, par_2] = -0.6
-                			
-                	if abs(z_diff[par_1, par_2]) < 0.6:
-                		if z_diff[par_1, par_2] > 0:
-                			z_diff[par_1, par_2] = 0.6
-                		else:
-                			z_diff[par_1, par_2] = -0.6
-                			
-                	# Applies periodic boundary condition
-                	if abs(x_diff[par_1, par_2]) > x_len:
-                		if x_diff[par_1, par_2] > 0:
-                			x_diff[par_1, par_2] -= x_len
-                		else:
-                			x_diff[par_1, par_2] += x_len 
-                			
-                	if abs(y_diff[par_1, par_2]) > y_len:
-                		if y_diff[par_1, par_2] > 0:
-                			y_diff[par_1, par_2] -= y_len
-                		else:
-                			y_diff[par_1, par_2] += y_len 
+                # Find x, y, and z distances
+                x_diff[par_1, par_2] = pos[par_1, 0] - pos[par_2, 0]
+                y_diff[par_1, par_2] = pos[par_1, 1] - pos[par_2, 1]
+                z_diff[par_1, par_2] = pos[par_1, 2] - pos[par_2, 2]
+                
+                # Applies minimum distance boundary
+                if abs(x_diff[par_1, par_2]) < 0.6:
+                    if x_diff[par_1, par_2] > 0:
+                        x_diff[par_1, par_2] = 0.6
+                    else:
+                        x_diff[par_1, par_2] = -0.6
+                		
+                if abs(y_diff[par_1, par_2]) < 0.6:
+                    if y_diff[par_1, par_2] > 0:
+                        y_diff[par_1, par_2] = 0.6
+                    else:
+                        y_diff[par_1, par_2] = -0.6
+                		
+                if abs(z_diff[par_1, par_2]) < 0.6:
+                    if z_diff[par_1, par_2] > 0:
+                        z_diff[par_1, par_2] = 0.6
+                    else:
+                        z_diff[par_1, par_2] = -0.6
+                		
+                # Applies periodic boundary condition
+                if abs(x_diff[par_1, par_2]) > x_len:
+                    if x_diff[par_1, par_2] > 0:
+                        x_diff[par_1, par_2] -= x_len
+                    else:
+                        x_diff[par_1, par_2] += x_len 
+                		
+                if abs(y_diff[par_1, par_2]) > y_len:
+                    if y_diff[par_1, par_2] > 0:
+                        y_diff[par_1, par_2] -= y_len
+                    else:
+                        y_diff[par_1, par_2] += y_len 
 
     return(x_diff, y_diff, z_diff)
 
-@jit()  
+@jit(nopython=True)  
 def periodic_boundary_position(pos , n_par, x_len, y_len):
     '''
     This function moves the particles according to the periodic boundaries
@@ -133,7 +141,6 @@ def periodic_boundary_position(pos , n_par, x_len, y_len):
     conditions.
     '''
     # Creates an array to store all the new positions
-    print(np.min(pos), np.max(pos))
     # Apply periodic boundary conditions. We are not applying periodic
     # boundaries to the z component
     
@@ -149,7 +156,7 @@ def periodic_boundary_position(pos , n_par, x_len, y_len):
     return pos
 
 
-@jit()
+@jit(nopython=True)
 def Momentum_Mirror(Position, Momentum, Piston_Momentum, Piston_Position, Mirror_Position, dt, N_Par):
     #This is the function for the momentum mirror and the Piston. It takes in: 
     
@@ -180,17 +187,22 @@ def Momentum_Mirror(Position, Momentum, Piston_Momentum, Piston_Position, Mirror
     return Position,Momentum
 
 
-@jit()
-def calc_Piston_Position(Piston_Position, Piston_Velocity, dt):
+@jit(nopython=True)
+def calc_Piston_Position(Piston_Position, Piston_Velocity, dt, pistonEndTime, t):
     #This function is extremely straight forward, the function takes in:
     
     #* Piston_Position = This should be Float.
     #* Piston Velocity = This should be a Float.
     #* dt = This should be Float.
+    #* pistonEndTime = end time of piston moving (JK, 2018-02-22)
+    #* t = current time in the simulation (JK, 2018-02-22)
     
     #The function takes the piston's position and updates it. Yup.
     
-    Piston_Position += Piston_Velocity * dt
+    if pistonEndTime != -1 and t <= pistonEndTime:
+        # compute new piston position;  
+        Piston_Position += Piston_Velocity * dt
+    
     return Piston_Position
 
 

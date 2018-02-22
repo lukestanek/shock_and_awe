@@ -2,6 +2,12 @@
 Module for parsing input file and checking input parameters. Also defining initial values of the system: dimensions, velocities, ....
 
 (c) 2018 - Tom Dixon, Janez Krek, Devin Lake, Ryan Marcus, Luke Stanek
+
+
+History:
+v0.1    - JK, 2018-02 initial read of input file
+v0.2    - JK, 2018-02-22 -- added end time of piston movement; input filename is part of parameter dict
+
 '''
 import numpy as np
 from numba import jit
@@ -17,31 +23,33 @@ def readfile(file, args):
        
     Returns:
        (dict): system parameters -  
-                      params = { 'N': [1, 1, 1],                         # number of particles
-                                 'spacing': [1.0, 1.0, 1.0],            # initial spacing of particles
-                                 'm': 0.0,                               # mass of particle
-                                 'dt': 1e-3, 'endTime': 10,              # time step, end time
-                                 'piston': {'z0': 0.0, 'v0': 1.0},       # piston init data
-                                 'eps': 1.0, 'sigma': 1.0,               # LennardJones potential parameters
-                                 'radius': 0.1                           # cutoff radius used in force calculation
+                      params = { 'N': [1, 1, 1],                                     # number of particles
+                                 'spacing': [1.0, 1.0, 1.0],                         # initial spacing of particles
+                                 'm': 0.0,                                           # mass of particle
+                                 'dt': 1e-3, 'endTime': 10,                          # time step, end time
+                                 'piston': {'z0': 0.0, 'v0': 1.0, 'endT': -1},       # piston init data: init positon, velocity, end time of movement
+                                 'eps': 1.0, 'sigma': 1.0,                           # LennardJones potential parameters
+                                 'radius': 0.1,                                      # cutoff radius used in force calculation
+                                 'input_filename': ''                                # input file name
                                }
     '''
     # define initialized dictionary or system parameters
-    params = { 'N': [1, 1, 1],                         # number of particles
-               'spacing': [1.0, 1.0, 1.0],            # initial spacing of particles
-               'm': 0.0,                               # mass of particle
-               'dt': 1e-3, 'endTime': 10,              # time step, end time
-               'piston': {'z0': 0.0, 'v0': 1.0},       # piston init data
-               'eps': 1.0, 'sigma': 1.0,               # LennardJones potential parameters
-               'radius': 0.1                           # cutoff radius used in force calculation
-             }
+    params = { 'N': [1, 1, 1],                                     # number of particles
+               'spacing': [1.0, 1.0, 1.0],                         # initial spacing of particles
+               'm': 0.0,                                           # mass of particle
+               'dt': 1e-3, 'endTime': 10,                          # time step, end time
+               'piston': {'z0': 0.0, 'v0': 1.0, 'endT': -1},       # piston init data: init positon, velocity, end time of movement (-1 = no stopping time)
+               'eps': 1.0, 'sigma': 1.0,                           # LennardJones potential parameters
+               'radius': 0.1,                                      # cutoff radius used in force calculation
+               'input_filename': ''                                # input file name
+    }
     # read file into list ot lines
     fh = open(file, "r")
     lines = fh.readlines()
     fh.close()
     
     cli_params = vars(args)
-    print(args, type(args))
+    params['input_filename'] = file
 #     import sys
 #     sys.exit()
     
@@ -56,10 +64,11 @@ def readfile(file, args):
             fld, restLine = [el.strip() for el in line.split("=")]
             
             if fld == 'piston':
-                # piston has 2 values: z0, v0
+                # piston has 3 values: z0, v0, endtime of moving
                 vals = [float(el.strip()) for el in restLine.split(",")]
                 params['piston']['z0'] = vals[0]
                 params['piston']['v0'] = vals[1]
+                params['piston']['endT'] = vals[2]
                 
             elif fld == 'N':
                 #  number of particles in the system has 3 values: Nx, Ny, Nz
@@ -86,11 +95,7 @@ def readfile(file, args):
         else: 
            # skip it
            pass
-    
-    
-      
-    
-    
+
     return params
 
 

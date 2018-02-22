@@ -2,13 +2,18 @@
 Module for integrator.
   
 (c) 2018 - Tom Dixon, Janez Krek, Devin Lake, Ryan Marcus, Luke Stanek
+
+History:
+v0.1    - DL, 2018-02 -- init
+v0.2    - JK, 2018-02-22 -- added (nopython=True) to jit()
+
 '''  
 import numpy as np
 from numba import jit
 import boundaries
 import sys
 
-@jit()
+@jit(nopython=True)
 def vel_ver(position, momentum, Piston_p, Piston_Momentum, dt, force, x_len, y_len, Mirror_Position, radius):
     """
     This is the function that will update our position and momentum arrays. It
@@ -67,25 +72,21 @@ def vel_ver(position, momentum, Piston_p, Piston_Momentum, dt, force, x_len, y_l
     position += momentum*dt
 
     # Applies the boundary conditions to the x, y positions
-    size = np.size(position, axis=0)
-    print("a", end='', flush=True)
+    #size = np.size(position, axis=0)
+    size = len(position)        # JK, 2018-02-22, nopython=True
     position = boundaries.periodic_boundary_position(position , size, x_len, y_len)
     
     # Applies the momentum mirror to the z positions
-    print("b", end='', flush=True)
     position, momentum = boundaries.Momentum_Mirror(position, momentum, Piston_Momentum, Piston_p, Mirror_Position, dt, size)
 
     # Updates the final force and momentum
-    print("c", end='', flush=True)
     force = calc_force(position, radius, x_len, y_len)
-    print("d", end='', flush=True)
     momentum += 0.5*dt*force
-    print("e", end='', flush=True)
 
     return position, momentum, force
   
   
-@jit()
+@jit(nopython=True)
 def calc_force(position, radius, x_len, y_len):
     """
     This is the function that will calculate the forces for the 
@@ -114,7 +115,7 @@ def calc_force(position, radius, x_len, y_len):
     """
     
     # Creates force array
-    size = np.size(position, axis=0)
+    size = len(position)        # JK, 2018-02-22; because of noptyhon=True
     force = np.zeros((size, 3))
     radius2 = radius**2
 

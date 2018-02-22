@@ -3,6 +3,10 @@ Main module for CMSE 890 group project.
 
 (c) 2018 - Tom Dixon, Janez Krek, Devin Lake, Ryan Marcus, Luke Stanek
 
+History:
+v0.1    - JK, 2018-02?? -- initial
+v0.2    - JK, 2018-02-22 -- piston end time added;
+
 '''
 import time
 import sys
@@ -49,6 +53,7 @@ def runSimulation(params):
    # initialize the system
    pistonPos = params['piston']['z0']        # piston initial position
    pistonVel = params['piston']['v0']        # piston initial velocity
+   pistonEndTime = params['piston']['endT']  # time when piston stops moving
 
    print(params)
    
@@ -94,23 +99,16 @@ def runSimulation(params):
 
       # lets do some work here...
       # update positions+momentum
-      print("-1", end='', flush=True)
       pos, mom, force = integrator.vel_ver(pos, mom, pistonPos, pistonVel, dt, force, Lx, Ly, Lz, radius)
       # impose the boundaries
-      print("-2", end='', flush=True)
       pos = boundaries.periodic_boundary_position(pos, N, Lx, Ly)
-      print("-3", end='', flush=True)
-      pistonPos = boundaries.calc_Piston_Position(pistonPos, pistonVel, dt)
-      print("-4", end='', flush=True)
+      pistonPos = boundaries.calc_Piston_Position(pistonPos, pistonVel, dt, pistonEndTime, t)
       pos, mom = boundaries.Momentum_Mirror(pos, mom, pistonVel, pistonPos, Lz, dt, N)
-      print("-5", end='', flush=True)
 
       # compute measurables
       KE = measurables.calc_kinetic(mom)
       #P = measurables.pressure(N, pos, mom, m, dim)
       T = measurables.calc_temp(mom)
-      print("-6", end='', flush=True)
-
 
       # save values in time history lists
       pistHist[i] = pistonPos #z component of pistion
@@ -126,7 +124,6 @@ def runSimulation(params):
         
       # prepare for next time step
       # === fill in if necessary ===
-      print("")
   
    print("100%. Done!")
 
@@ -135,15 +132,14 @@ def runSimulation(params):
    #??? we have to define an output file
    #output.write_all_end(posHist, momHist, KEhist, PEhist, Ehist)
 
-
-
-   output.write_pos_vel_hist("0_pos_vel_KE.txt", posHist, momHist, KEhist, pistHist, Lx, Ly, Lz)
+   baseName = params['input_filename'].replace(".inp", "")
+   outFile = "0_{0}_pos_vel_KE.txt".format(baseName)
+   print(" - writing into file: {0}".format(outFile))
+   output.write_pos_vel_hist(outFile, posHist, momHist, KEhist, pistHist, Lx, Ly, Lz)
 
    # visualize initial and end positions 
    #visualization.visualize(posHist[0],momHist[0])
    #visualization.visualize(posHist[-1],momHist[-1])
-
-
 
    return
 

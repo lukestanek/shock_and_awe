@@ -1,6 +1,9 @@
 '''
 Initialization module for CMSE 890 group project.
 (c) 2018 - Tom Dixon, Janez Krek, Devin Lake, Ryan Marcus, Luke Stanek
+
+History:
+v0.1    - LS, 2018-02 -- init
 '''
 
 # Import Modules
