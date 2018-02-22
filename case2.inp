@@ -1,5 +1,5 @@
 # system dimension
-N = 3, 3, 15
+N = 5, 5, 25
 spacing = 1.1, 1.1, 1.1
 m = 1.0
 dt = 1e-3

@@ -13,6 +13,7 @@ import sys
 import os
 import numpy as np
 import argparse
+import time
 
 import boundaries, input, initialization, integrator, measurables, output, visualization
 
@@ -79,7 +80,7 @@ def runSimulation(params):
 
    posHist[0] = pos
    momHist[0] = mom
-
+   tStart = time.time()
 
    if progress:
       print("==> Simulation run\n - computing...",end='')
@@ -126,6 +127,10 @@ def runSimulation(params):
       # === fill in if necessary ===
   
    print("100%. Done!")
+
+   tEnd = time.time()
+   
+   print(" - dt = {0:.2f}s ".format(tEnd-tStart))
 
    # output for visualization
    #output.write_4_movie()

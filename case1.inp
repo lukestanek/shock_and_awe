@@ -4,6 +4,6 @@ spacing = 1.1, 1.1, 1.1
 m = 1.0
 dt = 1e-3
 endTime = 10
-piston =  0.0, 0.5
+piston =  0.0, 0.5, -1
 eps = 1.0
 sigma = 1.0

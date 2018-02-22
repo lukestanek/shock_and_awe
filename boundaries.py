@@ -5,12 +5,12 @@ Module for boundaries.
 
 History:
 v0.1    - TD, RM, 2018-02 -- init
-v0.2    - JK, 2018-02-22 -- added piston movement end time; added (nopython=True) to jit()
+v0.2    - JK, 2018-02-22 -- added piston movement end time; added (nopython=True, parallel=True) to jit()
 '''
 import numpy as np
-from numba import jit
+from numba import jit, prange
 
-@jit(nopython=True)
+@jit(nopython=True, parallel=True)
 def periodic_boundary_force(pos, n_par, x_len, y_len):
     """
     This function applies the periodic boundaries to the
@@ -111,7 +111,7 @@ def periodic_boundary_force(pos, n_par, x_len, y_len):
 
     return(x_diff, y_diff, z_diff)
 
-@jit(nopython=True)  
+@jit(nopython=True, parallel=True)  
 def periodic_boundary_position(pos , n_par, x_len, y_len):
     '''
     This function moves the particles according to the periodic boundaries
@@ -144,7 +144,8 @@ def periodic_boundary_position(pos , n_par, x_len, y_len):
     # Apply periodic boundary conditions. We are not applying periodic
     # boundaries to the z component
     
-    for par in range(n_par):
+    for par in prange(n_par):
+        # using prange for parallel; JK, 2018-02-22
         # x component
         if pos[par,0] > x_len or pos[par, 0] < 0:
             pos[par,0] = pos[par, 0] % x_len
@@ -156,7 +157,7 @@ def periodic_boundary_position(pos , n_par, x_len, y_len):
     return pos
 
 
-@jit(nopython=True)
+@jit(nopython=True, parallel=True)
 def Momentum_Mirror(Position, Momentum, Piston_Momentum, Piston_Position, Mirror_Position, dt, N_Par):
     #This is the function for the momentum mirror and the Piston. It takes in: 
     
@@ -172,7 +173,8 @@ def Momentum_Mirror(Position, Momentum, Piston_Momentum, Piston_Position, Mirror
    # and update the new z position if the position violates our conditions. Finally the function 
    # returns the Particles Positions and Momentums.
     
-    for particle in range(N_Par):
+    for particle in prange(N_Par):
+        # using prange for parallel; JK, 2018-02-22
         Particle_Position = Position[particle]
         Particle_Momentum = Momentum[particle]
         

@@ -9,11 +9,11 @@ v0.2    - JK, 2018-02-22 -- added (nopython=True) to jit()
 
 '''  
 import numpy as np
-from numba import jit
+from numba import jit, prange
 import boundaries
 import sys
 
-@jit(nopython=True)
+@jit(nopython=True, parallel=True)
 def vel_ver(position, momentum, Piston_p, Piston_Momentum, dt, force, x_len, y_len, Mirror_Position, radius):
     """
     This is the function that will update our position and momentum arrays. It
@@ -86,7 +86,7 @@ def vel_ver(position, momentum, Piston_p, Piston_Momentum, dt, force, x_len, y_l
     return position, momentum, force
   
   
-@jit(nopython=True)
+@jit(nopython=True, parallel=True)
 def calc_force(position, radius, x_len, y_len):
     """
     This is the function that will calculate the forces for the 
@@ -123,8 +123,8 @@ def calc_force(position, radius, x_len, y_len):
     x_diff, y_diff, z_diff = boundaries.periodic_boundary_force(position, size, x_len, y_len)
     r_tilde = x_diff**2 + y_diff**2 + z_diff**2
 
-    for i in range(size-1):
-        for j in range(i+1,size):
+    for i in prange(0,size-1):
+        for j in prange(i+1,size):
           
             # If particle is in poor man's radius, calculates force
             if r_tilde[i][j] <= radius2:
@@ -139,16 +139,16 @@ def calc_force(position, radius, x_len, y_len):
 
                 force[i][2] += Sz
                 force[j][2] -= Sz
-
-            else:
-                force[i][0] += 0
-                force[j][0] -= 0
-
-                force[i][1] += 0
-                force[j][1] -= 0
-
-                force[i][2] += 0
-                force[j][2] -= 0
+# 
+#             else:
+#                 force[i][0] += 0
+#                 force[j][0] -= 0
+# 
+#                 force[i][1] += 0
+#                 force[j][1] -= 0
+# 
+#                 force[i][2] += 0
+#                 force[j][2] -= 0
 
     return force
 
