@@ -6,6 +6,7 @@ Module for boundaries.
 History:
 v0.1    - TD, RM, 2018-02 -- init
 v0.2    - JK, 2018-02-22 -- added piston movement end time; added (nopython=True, parallel=True) to jit()
+v0.3    - JK, 2018-02-22 -- small rewrite in periodic_boundary_force to make it faster + using prange
 '''
 import numpy as np
 from numba import jit, prange
@@ -48,66 +49,56 @@ def periodic_boundary_force(pos, n_par, x_len, y_len):
     """
     
     # Initialize the distances in positions arrays.
-    
-#     x_diff = np.zeros([n_par,n_par])
-#     y_diff = np.zeros([n_par,n_par])
-#     z_diff = np.zeros([n_par,n_par])
+
     # JK, 2018-02-22; nopython=True
     x_diff = np.zeros((n_par,n_par))
     y_diff = np.zeros((n_par,n_par))
     z_diff = np.zeros((n_par,n_par))
 
-    for par_1 in range(n_par):
-        for par_2 in range(n_par):
-			
-            if par_1 > par_2:
-                x_diff[par_1, par_2] = -x_diff[par_2, par_1]
-                y_diff[par_1, par_2] = -y_diff[par_2, par_1]
-                z_diff[par_1, par_2] = -z_diff[par_2, par_1]
-    			
-            elif par_1 == par_2:
-                x_diff[par_1, par_2] = 0
-                x_diff[par_1, par_2] = 0
-                x_diff[par_1, par_2] = 0
-                
-                # Find x, y, and z distances
-            else:
-                # Find x, y, and z distances
-                x_diff[par_1, par_2] = pos[par_1, 0] - pos[par_2, 0]
-                y_diff[par_1, par_2] = pos[par_1, 1] - pos[par_2, 1]
-                z_diff[par_1, par_2] = pos[par_1, 2] - pos[par_2, 2]
-                
-                # Applies minimum distance boundary
-                if abs(x_diff[par_1, par_2]) < 0.6:
-                    if x_diff[par_1, par_2] > 0:
-                        x_diff[par_1, par_2] = 0.6
-                    else:
-                        x_diff[par_1, par_2] = -0.6
-                		
-                if abs(y_diff[par_1, par_2]) < 0.6:
-                    if y_diff[par_1, par_2] > 0:
-                        y_diff[par_1, par_2] = 0.6
-                    else:
-                        y_diff[par_1, par_2] = -0.6
-                		
-                if abs(z_diff[par_1, par_2]) < 0.6:
-                    if z_diff[par_1, par_2] > 0:
-                        z_diff[par_1, par_2] = 0.6
-                    else:
-                        z_diff[par_1, par_2] = -0.6
-                		
-                # Applies periodic boundary condition
-                if abs(x_diff[par_1, par_2]) > x_len:
-                    if x_diff[par_1, par_2] > 0:
-                        x_diff[par_1, par_2] -= x_len
-                    else:
-                        x_diff[par_1, par_2] += x_len 
-                		
-                if abs(y_diff[par_1, par_2]) > y_len:
-                    if y_diff[par_1, par_2] > 0:
-                        y_diff[par_1, par_2] -= y_len
-                    else:
-                        y_diff[par_1, par_2] += y_len 
+    for par_1 in prange(n_par):
+        for par_2 in prange(par_1+1, n_par):
+            # loop over all particles; using prange for parallel; JK, 2018-02-22
+            # Find x, y, and z distances
+            x_diff[par_1, par_2] = pos[par_1, 0] - pos[par_2, 0]
+            y_diff[par_1, par_2] = pos[par_1, 1] - pos[par_2, 1]
+            z_diff[par_1, par_2] = pos[par_1, 2] - pos[par_2, 2]
+            
+            # Applies minimum distance boundary
+            if abs(x_diff[par_1, par_2]) < 0.6:
+                if x_diff[par_1, par_2] > 0:
+                    x_diff[par_1, par_2] = 0.6
+                else:
+                    x_diff[par_1, par_2] = -0.6
+            		
+            if abs(y_diff[par_1, par_2]) < 0.6:
+                if y_diff[par_1, par_2] > 0:
+                    y_diff[par_1, par_2] = 0.6
+                else:
+                    y_diff[par_1, par_2] = -0.6
+            		
+            if abs(z_diff[par_1, par_2]) < 0.6:
+                if z_diff[par_1, par_2] > 0:
+                    z_diff[par_1, par_2] = 0.6
+                else:
+                    z_diff[par_1, par_2] = -0.6
+            		
+            # Applies periodic boundary condition
+            if abs(x_diff[par_1, par_2]) > x_len:
+                if x_diff[par_1, par_2] > 0:
+                    x_diff[par_1, par_2] -= x_len
+                else:
+                    x_diff[par_1, par_2] += x_len 
+            		
+            if abs(y_diff[par_1, par_2]) > y_len:
+                if y_diff[par_1, par_2] > 0:
+                    y_diff[par_1, par_2] -= y_len
+                else:
+                    y_diff[par_1, par_2] += y_len 
+
+            # store same distance to "other" particle
+            x_diff[par_2, par_1] = -x_diff[par_1, par_2]
+            y_diff[par_2, par_1] = -y_diff[par_1, par_2]
+            z_diff[par_2, par_1] = -z_diff[par_1, par_2]
 
     return(x_diff, y_diff, z_diff)
 

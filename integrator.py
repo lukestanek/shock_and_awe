@@ -6,7 +6,7 @@ Module for integrator.
 History:
 v0.1    - DL, 2018-02 -- init
 v0.2    - JK, 2018-02-22 -- added (nopython=True) to jit()
-
+v0.3    - JK, 2018-02-22 -- small rewrite in calc_force to make it faster + using prange
 '''  
 import numpy as np
 from numba import jit, prange
@@ -125,7 +125,7 @@ def calc_force(position, radius, x_len, y_len):
 
     for i in prange(0,size-1):
         for j in prange(i+1,size):
-          
+            # using prange for paralllel 
             # If particle is in poor man's radius, calculates force
             if r_tilde[i][j] <= radius2:
                 S = 6*( 2*(r_tilde[i][j]**-7) - (r_tilde[i][j]**-4) )
@@ -139,16 +139,6 @@ def calc_force(position, radius, x_len, y_len):
 
                 force[i][2] += Sz
                 force[j][2] -= Sz
-# 
-#             else:
-#                 force[i][0] += 0
-#                 force[j][0] -= 0
-# 
-#                 force[i][1] += 0
-#                 force[j][1] -= 0
-# 
-#                 force[i][2] += 0
-#                 force[j][2] -= 0
 
     return force
 
