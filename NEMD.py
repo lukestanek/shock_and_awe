@@ -103,7 +103,12 @@ def runSimulation(params):
       pos, mom, force = integrator.vel_ver(pos, mom, pistonPos, pistonVel, dt, force, Lx, Ly, Lz, radius)
       # impose the boundaries
       pos = boundaries.periodic_boundary_position(pos, N, Lx, Ly)
-      pistonPos = boundaries.calc_Piston_Position(pistonPos, pistonVel, dt, pistonEndTime, t)
+      
+      if t < pistonEndTime:
+         pistonPos = boundaries.calc_Piston_Position(pistonPos, pistonVel, dt, pistonEndTime, t)
+      else:
+         pistonVel = 0.
+      
       pos, mom = boundaries.Momentum_Mirror(pos, mom, pistonVel, pistonPos, Lz, dt, N)
 
       # compute measurables
