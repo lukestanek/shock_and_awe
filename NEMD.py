@@ -83,7 +83,7 @@ def runSimulation(params):
    tStart = time.time()
 
    if progress:
-      print("==> Simulation run\n - computing...",end='')
+      print("==> Simulation run\n - computing...", end='')
       
    # compute forces on initial particles
    force = integrator.calc_force(pos, radius, Lx, Ly)
@@ -137,7 +137,8 @@ def runSimulation(params):
    #??? we have to define an output file
    #output.write_all_end(posHist, momHist, KEhist, PEhist, Ehist)
 
-   baseName = params['input_filename'].replace(".inp", "")
+   # get input file base name to use it as part of output files...
+   baseName, fileext = os.path.splitext(params['input_filename'])
    outFile = "0_{0}_pos_vel_KE.txt".format(baseName)
    print(" - writing into file: {0}".format(outFile))
    output.write_pos_vel_hist(outFile, posHist, momHist, KEhist, pistHist, Lx, Ly, Lz)
