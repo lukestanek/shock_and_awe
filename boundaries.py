@@ -192,9 +192,8 @@ def calc_Piston_Position(Piston_Position, Piston_Velocity, dt, pistonEndTime, t)
     
     #The function takes the piston's position and updates it. Yup.
     
-    if pistonEndTime != -1 and t <= pistonEndTime:
-        # compute new piston position;  
-        Piston_Position += Piston_Velocity * dt
+  
+    Piston_Position += Piston_Velocity * dt
     
     return Piston_Position
 
