@@ -13,7 +13,7 @@ from numba import jit, prange
 import boundaries
 import sys
 
-@jit(nopython=True, parallel=True)
+@jit()#nopython=True)#, parallel=True)
 def vel_ver(position, momentum, Piston_p, Piston_Momentum, dt, force, x_len, y_len, Mirror_Position, radius):
     """
     This is the function that will update our position and momentum arrays. It
@@ -86,7 +86,7 @@ def vel_ver(position, momentum, Piston_p, Piston_Momentum, dt, force, x_len, y_l
     return position, momentum, force
   
   
-@jit(nopython=True, parallel=True)
+@jit()#nopython=True)#, parallel=True)
 def calc_force(position, radius, x_len, y_len):
     """
     This is the function that will calculate the forces for the 
@@ -141,4 +141,46 @@ def calc_force(position, radius, x_len, y_len):
                 force[j][2] -= Sz
 
     return force
+
+@jit()#nopython=True)#, parallel=True)
+def calc_potential_energy(position, radius, x_len, y_len):
+    """
+    This is the function that will calculate total potential energy in the
+    system.
+    
+    Inputs:
+      position (numpy array with size num_particles x 3):
+            A numpy array containing the positions of all the particles
+            
+      radius (float):
+            The radius of the sphere of interaction for the force calculation
+                    
+      x_len (float):
+            The length of the box in the x direction. Assumes that the
+            box starts at x = 0 and goes in the positive direction.
+    
+      y_len (float):
+             The length of the box in the y direction. Assumes that the
+             box starts at y = 0 and goes in the positive direction.
+            
+    Outputs:
+      PE (float):
+            Total potential energy in the system
+    """
+    # Creates force array
+    size = len(position)        # JK, 2018-02-22; because of noptyhon=True
+    radius2 = radius**2
+    PE = 0.0
+
+    # Calculates distances arrays using the periodic boundary conditions
+    x_diff, y_diff, z_diff = boundaries.periodic_boundary_force(position, size, x_len, y_len)
+    r_tilde = x_diff**2 + y_diff**2 + z_diff**2
+
+    for i in range(0,size-1):
+        for j in range(i+1,size):
+            # If particle is in poor man's radius, calculates force
+            if r_tilde[i][j] <= radius2:
+                PE += r_tilde[i][j]**(-6) - r_tilde[i][j]**(-3)
+
+    return PE
 
