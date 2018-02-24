@@ -5,7 +5,7 @@ Main module for CMSE 890 group project.
 
 History:
 v0.1    - JK, 2018-02?? -- initial
-v0.2    - JK, 2018-02-22 -- piston end time added;
+v0.2    - JK, 2018-02-22 -- piston end time added; DL corrected moment error when piston stops moving
 
 '''
 import time
@@ -59,15 +59,13 @@ def runSimulation(params):
     pistonEndTime = params['piston']['endT']  # time when piston stops moving
     
     '''
-    Luke:
+    Luke (see input.py for details about parsmeters, if needed):
     
     params['Tdesired'] == desired temperature for thermostat
     params['eq_run']['M_eq'] == number equilibration steps
     params['eq_run']['M_scale'] == ratio between calibration steps in thermostat and M_eq: Ncalib = ratio * M_eq 
     '''
-    
-    
-    
+
     print(params)
     
     # initialize particle positions and momentums; also get system length
@@ -87,6 +85,8 @@ def runSimulation(params):
     KEhist = np.zeros(M)
     PEhist = np.zeros(M)
     Ehist = np.zeros(M)
+    PressHist = np.zeros((M,2))         # pressure
+    THist = np.zeros(M)                 # temperature
     # progress indicator
     progressList = [int(el) for el in M*np.linspace(0,1.,21)]
     progressList.pop(0)
@@ -108,6 +108,9 @@ def runSimulation(params):
     KEhist[0] = np.sum(KE)
     PEhist[0] = PE
     Ehist[0] = PE + KEhist[0]
+    #PressHist[0][0] = 0 # P0
+    #PressHist[0][1] = 0 # Pex 
+    #THist[0] = 0 
     
     for i in range(1, M):
         # main loop that goes over till given end time
@@ -134,8 +137,6 @@ def runSimulation(params):
         
         pos, mom = boundaries.Momentum_Mirror(pos, mom, pistonVel, pistonPos, Lz, dt, N)
         
-        print(i, mom[0,:])
-        
         # compute measurables
         KE = measurables.calc_kinetic_particles(mom)
         PE = integrator.calc_potential_energy(pos, radius, Lx, Ly)
@@ -150,6 +151,9 @@ def runSimulation(params):
         KEhist[i] = np.sum(KE)
         PEhist[i] = PE
         Ehist[i] = PE + KEhist[i]
+        #PressHist[0][0] = 0 # P0
+        #PressHist[0][1] = 0 # Pex 
+        #THist[0] = 0 
     
         # output values (?) 
         #??? into which file
@@ -162,7 +166,7 @@ def runSimulation(params):
     
     tEnd = time.time()
     
-    print(" - dt = {0:.2f}s ".format(tEnd-tStart))
+    print(" - time in computing: {0:.2f}s ".format(tEnd-tStart))
     
     # output for visualization
     #output.write_4_movie()
@@ -174,6 +178,15 @@ def runSimulation(params):
     outFile = "0_{0}_pos_vel_KE.txt".format(baseName)
     print(" - writing into file: {0}".format(outFile))
     output.write_pos_vel_hist(outFile, posHist, momHist, partKEhist, pistHist, Lx, Ly, Lz)
+    
+    # save measurables    
+    baseName, fileext = os.path.splitext(params['input_filename'])
+    outFile = "0_{0}_measurables.txt".format(baseName)
+    print(" - writing into file: {0}".format(outFile))
+    output.write_measurables_hist(outFile, endTime, KEhist, PEhist, Ehist, PressHist, THist)
+
+    
+    
     
     # visualize initial and end positions 
     #visualization.visualize(posHist[0],momHist[0])

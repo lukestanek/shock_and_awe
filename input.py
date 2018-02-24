@@ -67,7 +67,6 @@ def readfile(file, args):
             #  extract values from file
             dataInLine = line.split("#")[0]     # remove any comments in the last part of line
             fld, restLine = [el.strip() for el in dataInLine.strip().split("=")]
-            print(i, fld)
             
             if fld == 'piston':
                 # piston has 3 values: z0, v0, endtime of moving
@@ -106,9 +105,11 @@ def readfile(file, args):
     if 'eq_run' in cli_params.keys():
         # manage eq_run parames from CLI
         M_eq, M_scale = args.eq_run
-        params['eq_run']['M_eq'] = int(M_eq)
-        params['eq_run']['M_scale'] = float(M_scale)
-        print("Set {0} to M_eq={1}, M_scale={2} (CLI param)".format(fld, params['eq_run']['M_eq'], params['eq_run']['M_scale']))
+
+        if int(M_eq) > 0 and float(M_scale) > 0:
+            params['eq_run']['M_eq'] = int(M_eq)
+            params['eq_run']['M_scale'] = float(M_scale)
+            print("Set {0} to M_eq={1}, M_scale={2} (CLI param)".format(fld, params['eq_run']['M_eq'], params['eq_run']['M_scale']))
         
     elif fld in cli_params.keys() and cli_params[fld] != -1:
         # use value given in CLI

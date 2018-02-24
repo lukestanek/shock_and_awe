@@ -14,7 +14,6 @@ def write_pos_vel_hist(filename, pos, mom, KE, pis, Lx, Ly, Lz):
       filename (string): output file name
       pos (numpy array; M x (N,3) ): history of positions 
       mom (numpy array; M x (N,3) ): history of momenta
-      mom (numpy array; M x (N,3) ): history of momenta
       KE (numpy array; M x N ): history of momenta
       
    Returns:
@@ -48,9 +47,30 @@ def write_pos_vel_hist(filename, pos, mom, KE, pis, Lx, Ly, Lz):
       np.savetxt(fp, np.c_[b_tags, tpos, np.zeros((8,3)), np.zeros(8)], 
                  fmt="%f %f %f %f %f %f %f %f", header="", comments = "")
    fp.close()
-   print("Positions and momenta saves into file: {0}".format(filename))
+   print("Positions and momenta saved into file: {0}".format(filename))
 
    return
       
-      
+def write_measurables_hist(filename, maxTime, KE, PE, E, P, T):
+    ''' JK, 2018-02-24
+    Write positions and velocities into given file.
+    
+    Args:
+        maxTime (float): end time of computation
+        KE (numpy array; M x 1 ): history of kinetic energy
+        PE (numpy array; M x 1 ): history of potential energy
+        E (numpy array; M x 1 ): history of total energy
+        P (numpy array; M x 2 ): history of pressure [P0, Pex]
+        T (numpy array; M ): history of temperature
        
+    Returns:
+        ---
+    '''
+    M = len(KE)
+    fp = open(filename, "wb")
+    np.savetxt(fp, np.c_[np.linspace(0,maxTime,M), PE, KE, E, T, P[:,0], P[:,1], (P[:,0]+P[:,1])], fmt="%f %f %f %f %f %f %f %f", header="t PE KE H T P0 Pex P")
+    fp.close()
+ 
+    print("Measurables (energies, pressure, temperature) saved into file: {0}".format(filename))
+
+    return

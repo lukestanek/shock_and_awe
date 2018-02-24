@@ -46,6 +46,30 @@ def calc_kinetic(momentum):
         kinetic += 0.5*v**2
     return kinetic
   
+
+@jit()
+def calc_kinetic_particles(mom):
+    """
+    This function calculates the kinetic energy of particles in the system.
+    
+    Input:
+      momentum (numpy array with size num_particles x 3):
+            A numpy array containing the momentum of all the particles.
+            
+    Output:
+      kinetic (array):
+            Array of kinetic energy for all particles in the system single value that gives the kinetic energy of the system.
+    
+    """
+    size = len(mom)
+    KE = np.zeros(size)
+    
+    for i in range(0, size):
+        # JK, 2018-02-23
+        KE[i] = np.sum(mom[i]**2)/2.
+
+    return KE
+ 
   
 @jit()
 def calc_pressure(force, A):

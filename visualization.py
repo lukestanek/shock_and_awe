@@ -6,6 +6,7 @@ Visualization module for CMSE 890 group project.
 # Import Modules
 from mpl_toolkits.mplot3d import Axes3D
 import matplotlib.pyplot as plt
+import numpy as np
 
 def visualize(pos,mom):
     
@@ -43,3 +44,51 @@ def visualize(pos,mom):
     
     return 
 
+
+def energies(T, dt, KE, PE, H, fig_base = None, block=True, format='pdf', diff=False) :
+    '''
+    Plot results in given arrays and for given end time T and dt.
+    
+    Args:
+        T (double): end time
+        dt (double): time step
+        KE (dict): kinetic energy
+        PE (dict): potential energy
+        H (dict): total energy
+        fig_base (string): format for saving images, {0} is replaced by plot type (angle, velocity...); can include directory (which have to exist before saving file)
+    '''
+    xAxis = np.arange(0, T-0.5*dt, dt)
+    M = len(xAxis)
+    
+    import matplotlib.pyplot as plt
+    #       plt.figure(figsize=(20, 6), dpi=300)
+    plt.figure()
+    plt.grid(True) 
+    
+    if diff:
+        plt.title("Energy difference vs. time ($\Delta t=${0}s)".format(dt))
+    else:
+        plt.title("Energy vs. time ($\Delta t=${0}s)".format(dt))
+    
+    if diff is True:
+        # plot difference between total energies
+        plt.plot(xAxis, H/H[0] - 1, linestyle='solid', label="diff")
+        plt.ylabel("difference in total energy []")
+        plt.legend(loc='upper right')
+    else:
+        # plot all energies in absolute values
+        plt.plot(xAxis, KE, linestyle='solid', label="kinetic")
+        plt.plot(xAxis, PE, linestyle='solid', label="potential")
+        plt.plot(xAxis, H, linestyle='solid', label="total")
+        plt.ylabel("energy [J]")
+        plt.legend(loc='center right')
+    
+    plt.xlabel("time [s]")
+    plt.tight_layout()
+    
+    if fig_base != None:
+        plt.savefig(fig_base.format("energies"), format=format)
+    else:
+        plt.show(block)
+    
+    return 0
