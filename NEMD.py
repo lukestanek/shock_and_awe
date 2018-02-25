@@ -178,12 +178,12 @@ def runSimulation(params):
     outFile = "0_{0}_pos_vel_KE.txt".format(baseName)
     print(" - writing into file: {0}".format(outFile))
     output.write_pos_vel_hist(outFile, posHist, momHist, partKEhist, pistHist, Lx, Ly, Lz)
-    
-    # save measurables    
-    baseName, fileext = os.path.splitext(params['input_filename'])
-    outFile = "0_{0}_measurables.txt".format(baseName)
-    print(" - writing into file: {0}".format(outFile))
-    output.write_measurables_hist(outFile, endTime, KEhist, PEhist, Ehist, PressHist, THist)
+#      
+#     # save measurables    
+#     baseName, fileext = os.path.splitext(params['input_filename'])
+#     outFile = "0_{0}_measurables.txt".format(baseName)
+#     print(" - writing into file: {0}".format(outFile))
+#     output.write_measurables_hist(outFile, endTime, KEhist, PEhist, Ehist, PressHist, THist)
 
     
     

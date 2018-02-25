@@ -118,18 +118,21 @@ def calc_force(position, radius, x_len, y_len):
     size = len(position)        # JK, 2018-02-22; because of noptyhon=True
     force = np.zeros((size, 3))
     radius2 = radius**2
+    minDistance = 0.6           # JK, 2018-02-24
 
     # Calculates distances arrays using the periodic boundary conditions
     x_diff, y_diff, z_diff = boundaries.periodic_boundary_force(position, size, x_len, y_len)
     r_tilde = x_diff**2 + y_diff**2 + z_diff**2
 
-    for i in prange(0,size-1):
-        for j in prange(i+1,size):
+    for i in range(0,size-1):
+        for j in range(i+1,size):
             # using prange for paralllel 
+            r_tilde[i][j] = max(r_tilde[i][j], minDistance)
+            
             # If particle is in poor man's radius, calculates force
             if r_tilde[i][j] <= radius2:
-                S = 6*( 2*(r_tilde[i][j]**-7) - (r_tilde[i][j]**-4) )
-                Sx,Sy,Sz = S*x_diff[i][j],S*y_diff[i][j],S*z_diff[i][j]
+                S = 6*( 2*r_tilde[i][j]**(-7) - r_tilde[i][j]**(-4) )
+                Sx, Sy, Sz = S*x_diff[i][j], S*y_diff[i][j], S*z_diff[i][j]
 
                 force[i][0] += Sx
                 force[j][0] -= Sx

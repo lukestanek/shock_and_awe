@@ -90,6 +90,15 @@ def readfile(file, args):
                 vals = [float(el.strip()) for el in restLine.split(",")]
                 params['eq_run']['M_eq'] = int(vals[0])
                 params['eq_run']['M_scale'] = float(vals[1])
+
+                if 'eq_run' in cli_params.keys():
+                    # manage eq_run parames from CLI
+                    M_eq, M_scale = args.eq_run
+            
+                    if int(M_eq) > 0 and float(M_scale) > 0:
+                        params['eq_run']['M_eq'] = int(M_eq)
+                        params['eq_run']['M_scale'] = float(M_scale)
+                        print("Set {0} to M_eq={1}, M_scale={2} (CLI param)".format(fld, params['eq_run']['M_eq'], params['eq_run']['M_scale']))
                 
             elif fld in ['m', 'dt', 'endTime', 'eps', 'sigma', 'radius', 'Tdesired']:
                 # parameters that take only one value
@@ -98,23 +107,14 @@ def readfile(file, args):
             else:
                 print("Unknown parameter {0} in line {1}".format(line, i))
         
+            if fld != 'eq_run' and fld in cli_params.keys() and cli_params[fld] != -1:
+                # use value given in CLI
+                print("Set {0} to {1} (CLI param)".format(fld, cli_params[fld]))
+                params[fld] = float(cli_params[fld])
+        
         else: 
            # skip it
            pass
-
-    if 'eq_run' in cli_params.keys():
-        # manage eq_run parames from CLI
-        M_eq, M_scale = args.eq_run
-
-        if int(M_eq) > 0 and float(M_scale) > 0:
-            params['eq_run']['M_eq'] = int(M_eq)
-            params['eq_run']['M_scale'] = float(M_scale)
-            print("Set {0} to M_eq={1}, M_scale={2} (CLI param)".format(fld, params['eq_run']['M_eq'], params['eq_run']['M_scale']))
-        
-    elif fld in cli_params.keys() and cli_params[fld] != -1:
-        # use value given in CLI
-        print("Set {0} to {1} (CLI param)".format(fld, cli_params[fld]))
-        params[fld] = float(cli_params[fld])
 
     return params
 

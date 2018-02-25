@@ -11,7 +11,7 @@ v0.3    - JK, 2018-02-22 -- small rewrite in periodic_boundary_force to make it 
 import numpy as np
 from numba import jit, prange
 
-@jit(nopython=True, parallel=True)
+@jit()#nopython=True)#, parallel=True)
 def periodic_boundary_force(pos, n_par, x_len, y_len):
     """
     This function applies the periodic boundaries to the
@@ -49,14 +49,14 @@ def periodic_boundary_force(pos, n_par, x_len, y_len):
     """
     
     # Initialize the distances in positions arrays.
-
+    minDistance = 0.6               # JK, 2018-02-24
     # JK, 2018-02-22; nopython=True
     x_diff = np.zeros((n_par,n_par))
     y_diff = np.zeros((n_par,n_par))
     z_diff = np.zeros((n_par,n_par))
 
-    for par_1 in prange(n_par):
-        for par_2 in prange(par_1+1, n_par):
+    for par_1 in range(n_par):
+        for par_2 in range(par_1+1, n_par):
             # loop over all particles; using prange for parallel; JK, 2018-02-22
             # Find x, y, and z distances
             x_diff[par_1, par_2] = pos[par_1, 0] - pos[par_2, 0]
@@ -64,23 +64,23 @@ def periodic_boundary_force(pos, n_par, x_len, y_len):
             z_diff[par_1, par_2] = pos[par_1, 2] - pos[par_2, 2]
             
             # Applies minimum distance boundary
-            if abs(x_diff[par_1, par_2]) < 0.6:
+            if abs(x_diff[par_1, par_2]) < minDistance:
                 if x_diff[par_1, par_2] > 0:
-                    x_diff[par_1, par_2] = 0.6
+                    x_diff[par_1, par_2] = minDistance
                 else:
-                    x_diff[par_1, par_2] = -0.6
+                    x_diff[par_1, par_2] = -minDistance
             		
-            if abs(y_diff[par_1, par_2]) < 0.6:
+            if abs(y_diff[par_1, par_2]) < minDistance:
                 if y_diff[par_1, par_2] > 0:
-                    y_diff[par_1, par_2] = 0.6
+                    y_diff[par_1, par_2] = minDistance
                 else:
-                    y_diff[par_1, par_2] = -0.6
+                    y_diff[par_1, par_2] = -minDistance
             		
-            if abs(z_diff[par_1, par_2]) < 0.6:
+            if abs(z_diff[par_1, par_2]) < minDistance:
                 if z_diff[par_1, par_2] > 0:
-                    z_diff[par_1, par_2] = 0.6
+                    z_diff[par_1, par_2] = minDistance
                 else:
-                    z_diff[par_1, par_2] = -0.6
+                    z_diff[par_1, par_2] = -minDistance
             		
             # Applies periodic boundary condition
             if abs(x_diff[par_1, par_2]) > x_len:
@@ -102,7 +102,7 @@ def periodic_boundary_force(pos, n_par, x_len, y_len):
 
     return(x_diff, y_diff, z_diff)
 
-@jit(nopython=True, parallel=True)  
+@jit()#nopython=True)#, parallel=True)  
 def periodic_boundary_position(pos , n_par, x_len, y_len):
     '''
     This function moves the particles according to the periodic boundaries
@@ -135,7 +135,7 @@ def periodic_boundary_position(pos , n_par, x_len, y_len):
     # Apply periodic boundary conditions. We are not applying periodic
     # boundaries to the z component
     
-    for par in prange(n_par):
+    for par in range(n_par):
         # using prange for parallel; JK, 2018-02-22
         # x component
         if pos[par,0] > x_len or pos[par, 0] < 0:
@@ -148,7 +148,7 @@ def periodic_boundary_position(pos , n_par, x_len, y_len):
     return pos
 
 
-@jit(nopython=True, parallel=True)
+#@jit()#nopython=True)#, parallel=True)
 def Momentum_Mirror(Position, Momentum, Piston_Momentum, Piston_Position, Mirror_Position, dt, N_Par):
     #This is the function for the momentum mirror and the Piston. It takes in: 
     
@@ -164,7 +164,7 @@ def Momentum_Mirror(Position, Momentum, Piston_Momentum, Piston_Position, Mirror
    # and update the new z position if the position violates our conditions. Finally the function 
    # returns the Particles Positions and Momentums.
     
-    for particle in prange(N_Par):
+    for particle in range(N_Par):
         # using prange for parallel; JK, 2018-02-22
         Particle_Position = Position[particle]
         Particle_Momentum = Momentum[particle]
@@ -177,10 +177,10 @@ def Momentum_Mirror(Position, Momentum, Piston_Momentum, Piston_Position, Mirror
             Particle_Position[2] = Mirror_Position - (Particle_Position[2] - Mirror_Position)
             Particle_Momentum[2] = -(Particle_Momentum[2])  
             
-    return Position,Momentum
+    return Position, Momentum
 
 
-@jit(nopython=True)
+@jit()#nopython=True)
 def calc_Piston_Position(Piston_Position, Piston_Velocity, dt, pistonEndTime, t):
     #This function is extremely straight forward, the function takes in:
     
@@ -192,7 +192,6 @@ def calc_Piston_Position(Piston_Position, Piston_Velocity, dt, pistonEndTime, t)
     
     #The function takes the piston's position and updates it. Yup.
     
-  
     Piston_Position += Piston_Velocity * dt
     
     return Piston_Position
