@@ -45,7 +45,7 @@ def readfile(file, args):
                'radius': 0.1,                                      # cutoff radius used in force calculation
                'input_filename': '',                               # input file name
                'Tdesired': -1,                                     # desired temperatue in the system; -1 means no thermostat
-               'eq_run': {'M_eq': 0, "M_scale": 0}                 # time steps in equlibration run and ratio for thermostat 
+               'eq_run': {'M_eq':0, "M_scale":0}                 # time steps in equlibration run and ratio for thermostat 
     }
     # read file into list ot lines
     fh = open(file, "r")

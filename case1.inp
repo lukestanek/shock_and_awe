@@ -7,3 +7,6 @@ endTime = 10
 piston =  0.0, 0.5, -1
 eps = 1.0
 sigma = 1.0
+M_eq = 10000
+M_scale = 100
+Tdesired = 10
