@@ -16,7 +16,7 @@ import measurables
 
 @jit()#nopython=True)#, parallel=True)
 def vel_ver(position, momentum, Piston_p, Piston_Momentum, dt, force, x_len, y_len, Mirror_Position, radius,
-			desired_temp, M_scale):
+            desired_temp, M_scale):
     """
     This is the function that will update our position and momentum arrays. It
     assumes a rectangular piston cross-section and it applies boundary conditions
@@ -85,9 +85,9 @@ def vel_ver(position, momentum, Piston_p, Piston_Momentum, dt, force, x_len, y_l
     force = calc_force(position, radius, x_len, y_len)
     momentum += 0.5*dt*force
 
-	# Implement thermostat
-	if thermo == 'on':
-		# Calculate temperature before scaling
+    # Implement thermostat
+    if thermo == 'on':
+        # Calculate temperature before scaling
         current_temp = measurables.calc_temp(momentum)
         # Call thermostat function
         momentum  = thermostat(momentum, current_temp, desired_temp, M_scale)
