@@ -48,14 +48,20 @@ def initilization(N_part,spacing):
 
     # Create a lattice of N_part particles 
     X,Y,Z = np.meshgrid(x,y,z)
-        
-    # Add a perturbation to particles (based on different seeds)
+
+    # perfect lattice
     random.seed(1)
-    x = X.ravel() + np.random.randn(N_total)*.01 
+    x = X.ravel()
     random.seed(2)
-    y = Y.ravel() + np.random.randn(N_total)*.01
+    y = Y.ravel()
     random.seed(3)
-    z = Z.ravel() + np.random.randn(N_total)*.01
+    z = Z.ravel()
+
+    if 1 == 1:        
+        # Add a perturbation to particles (based on different seeds)
+        x += np.random.randn(N_total)*.01
+        y += np.random.randn(N_total)*.01
+        z += np.random.randn(N_total)*.01
     
     # Store the pariticle positons in array
     position = np.empty([N_total,3])

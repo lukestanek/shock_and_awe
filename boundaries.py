@@ -49,7 +49,6 @@ def periodic_boundary_force(pos, n_par, x_len, y_len):
     """
     
     # Initialize the distances in positions arrays.
-    minDistance = 0.6               # JK, 2018-02-24
     # JK, 2018-02-22; nopython=True
     x_diff = np.zeros((n_par,n_par))
     y_diff = np.zeros((n_par,n_par))
@@ -63,33 +62,14 @@ def periodic_boundary_force(pos, n_par, x_len, y_len):
             y_diff[par_1, par_2] = pos[par_1, 1] - pos[par_2, 1]
             z_diff[par_1, par_2] = pos[par_1, 2] - pos[par_2, 2]
             
-            # Applies minimum distance boundary
-            if abs(x_diff[par_1, par_2]) < minDistance:
-                if x_diff[par_1, par_2] > 0:
-                    x_diff[par_1, par_2] = minDistance
-                else:
-                    x_diff[par_1, par_2] = -minDistance
-            		
-            if abs(y_diff[par_1, par_2]) < minDistance:
-                if y_diff[par_1, par_2] > 0:
-                    y_diff[par_1, par_2] = minDistance
-                else:
-                    y_diff[par_1, par_2] = -minDistance
-            		
-            if abs(z_diff[par_1, par_2]) < minDistance:
-                if z_diff[par_1, par_2] > 0:
-                    z_diff[par_1, par_2] = minDistance
-                else:
-                    z_diff[par_1, par_2] = -minDistance
-            		
             # Applies periodic boundary condition
-            if abs(x_diff[par_1, par_2]) > x_len:
+            if abs(x_diff[par_1, par_2]) > x_len / 2:
                 if x_diff[par_1, par_2] > 0:
                     x_diff[par_1, par_2] -= x_len
                 else:
                     x_diff[par_1, par_2] += x_len 
             		
-            if abs(y_diff[par_1, par_2]) > y_len:
+            if abs(y_diff[par_1, par_2]) > y_len / 2:
                 if y_diff[par_1, par_2] > 0:
                     y_diff[par_1, par_2] -= y_len
                 else:
@@ -181,14 +161,12 @@ def Momentum_Mirror(Position, Momentum, Piston_Momentum, Piston_Position, Mirror
 
 
 @jit()#nopython=True)
-def calc_Piston_Position(Piston_Position, Piston_Velocity, dt, pistonEndTime, t):
+def calc_Piston_Position(Piston_Position, Piston_Velocity, dt):
     #This function is extremely straight forward, the function takes in:
     
     #* Piston_Position = This should be Float.
     #* Piston Velocity = This should be a Float.
     #* dt = This should be Float.
-    #* pistonEndTime = end time of piston moving (JK, 2018-02-22)
-    #* t = current time in the simulation (JK, 2018-02-22)
     
     #The function takes the piston's position and updates it. Yup.
     

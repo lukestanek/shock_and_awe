@@ -15,8 +15,7 @@ import sys
 import measurables
 
 @jit()#nopython=True)#, parallel=True)
-def vel_ver(position, momentum, Piston_p, Piston_Momentum, dt, force, x_len, y_len, Mirror_Position, radius,
-            desired_temp, M_scale):
+def vel_ver(position, momentum, Piston_p, Piston_Momentum, dt, force, x_len, y_len, Mirror_Position, radius):
     """
     This is the function that will update our position and momentum arrays. It
     assumes a rectangular piston cross-section and it applies boundary conditions
@@ -77,21 +76,12 @@ def vel_ver(position, momentum, Piston_p, Piston_Momentum, dt, force, x_len, y_l
     #size = np.size(position, axis=0)
     size = len(position)        # JK, 2018-02-22, nopython=True
     position = boundaries.periodic_boundary_position(position , size, x_len, y_len)
-    
-    # Applies the momentum mirror to the z positions
-    position, momentum = boundaries.Momentum_Mirror(position, momentum, Piston_Momentum, Piston_p, Mirror_Position, dt, size)
 
     # Updates the final force and momentum
     force = calc_force(position, radius, x_len, y_len)
+    
     momentum += 0.5*dt*force
 
-    # Implement thermostat
-    if thermo == 'on':
-        # Calculate temperature before scaling
-        current_temp = measurables.calc_temp(momentum)
-        # Call thermostat function
-        momentum  = thermostat(momentum, current_temp, desired_temp, M_scale)
-        
     return position, momentum, force
   
   
@@ -183,7 +173,8 @@ def calc_potential_energy(position, radius, x_len, y_len):
     size = len(position)        # JK, 2018-02-22; because of noptyhon=True
     radius2 = radius**2
     PE = 0.0
-
+    minDistance = 0.6
+    
     # Calculates distances arrays using the periodic boundary conditions
     x_diff, y_diff, z_diff = boundaries.periodic_boundary_force(position, size, x_len, y_len)
     r_tilde = x_diff**2 + y_diff**2 + z_diff**2
@@ -191,6 +182,8 @@ def calc_potential_energy(position, radius, x_len, y_len):
     for i in range(0,size-1):
         for j in range(i+1,size):
             # If particle is in poor man's radius, calculates force
+            r_tilde[i][j] = max(r_tilde[i][j], minDistance)
+
             if r_tilde[i][j] <= radius2:
                 PE += r_tilde[i][j]**(-6) - r_tilde[i][j]**(-3)
 

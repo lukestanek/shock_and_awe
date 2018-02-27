@@ -60,14 +60,10 @@ def runSimulation(params):
     desired_temp = params['Tdesired']
     M_eq = params['eq_run']['M_eq']
     M_scale = params['eq_run']['M_scale']
-    
-    '''
-    Luke (see input.py for details about parsmeters, if needed):
-    
-    params['Tdesired'] == desired temperature for thermostat
-    params['eq_run']['M_eq'] == number equilibration steps
-    params['eq_run']['M_scale'] == ratio between calibration steps in thermostat and M_eq: Ncalib = ratio * M_eq 
-    '''
+    # equilibraton parameters
+    Tdesired = params['Tdesired']
+    Meq = params['eq_run']['M_eq'] 
+    M_scale = params['eq_run']['M_scale']
 
     print(params)
     
@@ -90,9 +86,6 @@ def runSimulation(params):
     Ehist = np.zeros(M)
     PressHist = np.zeros((M,2))         # pressure
     THist = np.zeros(M)                 # temperature
-    # progress indicator
-    progressList = [int(el) for el in M*np.linspace(0,1.,21)]
-    progressList.pop(0)
     
     posHist[0] = pos
     momHist[0] = mom
@@ -113,99 +106,127 @@ def runSimulation(params):
     Ehist[0] = PE + KEhist[0]
     #PressHist[0][0] = 0 # P0
     #PressHist[0][1] = 0 # Pex 
-    THist[0] = calc_temp(mom) 
-    thermo = 'on'
+    THist[0] = measurables.calc_temp(mom) 
 
-    for i in range(1, M):        
-        # Thermostat on
-        if thermo == 'on':
-            #Run equilibration phase
-            for i in range(M_eq): #Put N_equil in input file
-                # update positions+momentum
-                pos, mom, force = integrator.vel_ver(pos, mom, pistonPos, pistonVel, dt, force, Lx, Ly, Lz, radius,
-                                                          desired_temp, M_scale)
-            thermo = 'off'
-    
-        # Thermostat not on
-        else:    
+    if False and Meq > 0:
+        # run equilibration steps
+        # progress indicator
+        progressList = [int(el) for el in Meq*np.linspace(0,1.,21)]
+        progressList.pop(0)
+
+        for i in range(1, Meq):
             # main loop that goes over till given end time
             t = dt*i
                 
             if progress:
                 # display progress
                 if( i == progressList[0] ):
-                    print("{0:d}%...".format(int((i)*100.0/M)),end='', flush=True)
+                    print("{0:d}%...".format(int((i)*100.0/Meq)),end='', flush=True)
                     progressList.pop(0)
-            
-                # lets do some work here...
-                # update positions+momentum
-                pos, mom, force = integrator.vel_ver(pos, mom, pistonPos, pistonVel, dt, force, Lx, Ly, Lz, radius,
-                                                     desired_temp, M_scale)
-                # impose the boundaries
-                pos = boundaries.periodic_boundary_position(pos, N, Lx, Ly)
-                
-                if t < pistonEndTime:
-                    # piston is still moving
-                    pistonPos = boundaries.calc_Piston_Position(pistonPos, pistonVel, dt, pistonEndTime, t)
-                else:
-                    # piston is stationary 
-                    pistonVel = 0.
-                
-                pos, mom = boundaries.Momentum_Mirror(pos, mom, pistonVel, pistonPos, Lz, dt, N)
-                
-                # compute measurables
-                KE = measurables.calc_kinetic_particles(mom)
-                PE = integrator.calc_potential_energy(pos, radius, Lx, Ly)
-                #P = measurables.pressure(N, pos, mom, m, dim)
-                T = measurables.calc_temp(mom)
-                
-                # save values in time history lists
-                pistHist[i] = pistonPos #z component of piston
-                posHist[i] = pos
-                momHist[i] = mom
-                partKEhist[0] = KE
-                KEhist[i] = np.sum(KE)
-                PEhist[i] = PE
-                Ehist[i] = PE + KEhist[i]
-                #PressHist[0][0] = 0 # P0
-                #PressHist[0][1] = 0 # Pex 
-                THist[i] = T 
-            
-                # output values (?) 
-                #??? into which file
-                #output.write_step(N, pos, mom, KE, PE, E, T, P)
-                  
-                # prepare for next time step
-                # === fill in if necessary ===
-            
-            print("100%. Done!")
-            
-            tEnd = time.time()
-            
-            print(" - time in computing: {0:.2f}s ".format(tEnd-tStart))
-            
-            # output for visualization
-            #output.write_4_movie()
-            #??? we have to define an output file
-            #output.write_all_end(posHist, momHist, KEhist, PEhist, Ehist)
-            
-            # get input file base name to use it as part of output files...
-            baseName, fileext = os.path.splitext(params['input_filename'])
-            outFile = "0_{0}_pos_vel_KE.txt".format(baseName)
-            print(" - writing into file: {0}".format(outFile))
-            output.write_pos_vel_hist(outFile, posHist, momHist, partKEhist, pistHist, Lx, Ly, Lz)
-        #      
-        #     # save measurables    
-        #     baseName, fileext = os.path.splitext(params['input_filename'])
-        #     outFile = "0_{0}_measurables.txt".format(baseName)
-        #     print(" - writing into file: {0}".format(outFile))
-        #     output.write_measurables_hist(outFile, endTime, KEhist, PEhist, Ehist, PressHist, THist)
+                    
+            # update positions+momentum; using piston velocity = 0.0
+            pos, mom, force = integrator.vel_ver(pos, mom, pistonPos, 0.0, dt, force, Lx, Ly, Lz, radius)
 
-            # visualize initial and end positions 
-            #visualization.visualize(posHist[0],momHist[0])
-            #visualization.visualize(posHist[-1],momHist[-1])
-            visualization.energies(endTime, dt, KEhist, PEhist, Ehist, block=False, diff=True )
-            visualization.energies(endTime, dt, KEhist, PEhist, Ehist, diff=False )
+            # impose the boundaries
+            pos = boundaries.periodic_boundary_position(pos, N, Lx, Ly)
+            
+            if t < pistonEndTime:
+                # piston is still moving
+                pistonPos = boundaries.calc_Piston_Position(pistonPos, pistonVel, dt, pistonEndTime, t)
+            else:
+                # piston is stationary 
+                pistonVel = 0.
+            
+            pos, mom = boundaries.Momentum_Mirror(pos, mom, pistonVel, pistonPos, Lz, dt, N)
+
+            # Calculate temperature before scaling
+            current_temp = measurables.calc_temp(momentum)
+            # Call thermostat function
+            momentum  = thermostat(momentum, current_temp, desired_temp, M_scale)
+        
+
+
+    # progress indicator
+    progressList = [int(el) for el in M*np.linspace(0,1.,21)]
+    progressList.pop(0)
+
+    for i in range(1, M):        
+        # main loop that goes over till given end time
+        t = dt*i
+            
+        if progress:
+            # display progress
+            if( i == progressList[0] ):
+                print("{0:d}%...".format(int((i)*100.0/M)),end='', flush=True)
+                progressList.pop(0)
+        
+        # lets do some work here...
+        # update positions+momentum
+        pos, mom, force = integrator.vel_ver(pos, mom, pistonPos, pistonVel, dt, force, Lx, Ly, Lz, radius)
+
+        # impose the boundaries
+        if t <= pistonEndTime:
+            # piston is still moving
+            pistonPos = boundaries.calc_Piston_Position(pistonPos, pistonVel, dt)
+        else:
+            # piston is stationary 
+            pistonVel = 0.
+           
+        pos, mom = boundaries.Momentum_Mirror(pos, mom, pistonVel, pistonPos, Lz, dt, N)
+        
+        # compute measurables
+        KE = measurables.calc_kinetic_particles(mom)
+        PE = integrator.calc_potential_energy(pos, radius, Lx, Ly)
+        #P = measurables.pressure(N, pos, mom, m, dim)
+        T = measurables.calc_temp(mom)
+        
+        # save values in time history lists
+        pistHist[i] = pistonPos #z component of piston
+        posHist[i] = pos
+        momHist[i] = mom
+        partKEhist[0] = KE
+        KEhist[i] = np.sum(KE)
+        PEhist[i] = PE
+        Ehist[i] = PE + KEhist[i]
+        #PressHist[0][0] = 0 # P0
+        #PressHist[0][1] = 0 # Pex 
+        THist[i] = T 
+    
+        # output values (?) 
+        #??? into which file
+        #output.write_step(N, pos, mom, KE, PE, E, T, P)
+          
+        # prepare for next time step
+        # === fill in if necessary ===
+        
+    print("100%. Done!")
+    
+    tEnd = time.time()
+    
+    print(" - time in computing: {0:.2f}s ".format(tEnd-tStart))
+    
+    # output for visualization
+    #output.write_4_movie()
+    #??? we have to define an output file
+    #output.write_all_end(posHist, momHist, KEhist, PEhist, Ehist)
+    
+    # get input file base name to use it as part of output files...
+    baseName, fileext = os.path.splitext(params['input_filename'])
+    outFile = "0_{0}_pos_vel_KE.txt".format(baseName)
+    print(" - writing into file: {0}".format(outFile))
+    output.write_pos_vel_hist(outFile, posHist, momHist, partKEhist, pistHist, Lx, Ly, Lz)
+
+#     # save measurables    
+#     baseName, fileext = os.path.splitext(params['input_filename'])
+#     outFile = "0_{0}_measurables.txt".format(baseName)
+#     print(" - writing into file: {0}".format(outFile))
+#     output.write_measurables_hist(outFile, endTime, KEhist, PEhist, Ehist, PressHist, THist)
+
+    # visualize initial and end positions 
+    #visualization.visualize(posHist[0],momHist[0])
+    #visualization.visualize(posHist[-1],momHist[-1])
+    visualization.energies(endTime, dt, KEhist, PEhist, Ehist, block=False, diff=True )
+    visualization.energies(endTime, dt, KEhist, PEhist, Ehist, diff=False )
     
     return
 
