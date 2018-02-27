@@ -89,7 +89,7 @@ def readfile(file, args):
                 # equilibration data: # step for eq. and Nstep for thermostat
                 vals = [float(el.strip()) for el in restLine.split(",")]
                 params['eq_run']['M_eq'] = int(vals[0])
-                params['eq_run']['M_scale'] = float(vals[1])
+                params['eq_run']['M_scale'] =  max(1, float(vals[1])*params['eq_run']['M_eq'])
 
                 if 'eq_run' in cli_params.keys():
                     # manage eq_run parames from CLI
@@ -97,7 +97,7 @@ def readfile(file, args):
             
                     if int(M_eq) > 0 and float(M_scale) > 0:
                         params['eq_run']['M_eq'] = int(M_eq)
-                        params['eq_run']['M_scale'] = float(M_scale)
+                        params['eq_run']['M_scale'] = max(1, float(M_scale)*params['eq_run']['M_eq'])
                         print("Set {0} to M_eq={1}, M_scale={2} (CLI param)".format(fld, params['eq_run']['M_eq'], params['eq_run']['M_scale']))
                 
             elif fld in ['m', 'dt', 'endTime', 'eps', 'sigma', 'radius', 'Tdesired']:

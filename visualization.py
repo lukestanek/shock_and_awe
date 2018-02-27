@@ -92,3 +92,33 @@ def energies(T, dt, KE, PE, H, fig_base = None, block=True, format='pdf', diff=F
         plt.show(block)
     
     return 0
+
+
+def temperature(T, dt, temp, block=True, title="Temperature vs. time", ylimits=None):
+    '''
+    Plot results in given arrays and for given end time T and dt.
+    
+    Args:
+        T (double): end time
+        dt (double): time step
+        T (numpy array): temperate
+    '''
+    import matplotlib.pyplot as plt
+    xAxis = np.arange(0, T-0.5*dt, dt)
+    M = len(xAxis)
+    fig = plt.figure()
+    plt.grid(True);
+    plt.title(title)
+    plt.plot(xAxis, temp,label='temperature')
+    plt.xlabel('time [s]')
+    plt.ylabel('temperature []')
+    
+    if ylimits is not None:
+        plt.ylim(ylimits[0], ylimits[1])
+    
+    plt.legend()
+    plt.tight_layout()
+    plt.show(block=block)
+
+
+

@@ -15,7 +15,7 @@ import numpy as np
 import argparse
 import time
 
-import boundaries, input, initialization, integrator, measurables, output, visualization
+import boundaries, input, initialization, integrator, measurables, output, visualization, thermostat
 
 def parse_args():
     '''
@@ -57,11 +57,8 @@ def runSimulation(params):
     pistonPos = params['piston']['z0']        # piston initial position
     pistonVel = params['piston']['v0']        # piston initial velocity
     pistonEndTime = params['piston']['endT']  # time when piston stops moving
-    desired_temp = params['Tdesired']
-    M_eq = params['eq_run']['M_eq']
-    M_scale = params['eq_run']['M_scale']
     # equilibraton parameters
-    Tdesired = params['Tdesired']
+    desired_temp = params['Tdesired']
     Meq = params['eq_run']['M_eq'] 
     M_scale = params['eq_run']['M_scale']
 
@@ -86,15 +83,13 @@ def runSimulation(params):
     Ehist = np.zeros(M)
     PressHist = np.zeros((M,2))         # pressure
     THist = np.zeros(M)                 # temperature
+    THistEQ = np.zeros(Meq)                 # temperature
     
     posHist[0] = pos
     momHist[0] = mom
     
     tStart = time.time()
     
-    if progress:
-        print("==> Simulation run\n - computing...", end='')
-        
     # compute forces on initial particles
     force = integrator.calc_force(pos, radius, Lx, Ly)
     KE = measurables.calc_kinetic_particles(mom)
@@ -106,10 +101,15 @@ def runSimulation(params):
     Ehist[0] = PE + KEhist[0]
     #PressHist[0][0] = 0 # P0
     #PressHist[0][1] = 0 # Pex 
-    THist[0] = measurables.calc_temp(mom) 
+    THistEQ[0] = measurables.calc_temp(mom) 
 
-    if False and Meq > 0:
+    if desired_temp > 0 and Meq > 0:
         # run equilibration steps
+        if progress:
+           print("==> Equilibration run....")
+           print(" - running for Meq = ", Meq, " steps")
+           print(" - computing...", end='')
+
         # progress indicator
         progressList = [int(el) for el in Meq*np.linspace(0,1.,21)]
         progressList.pop(0)
@@ -124,33 +124,38 @@ def runSimulation(params):
                     print("{0:d}%...".format(int((i)*100.0/Meq)),end='', flush=True)
                     progressList.pop(0)
                     
-            # update positions+momentum; using piston velocity = 0.0
+            # lets do some work here...
+            # update positions+momentum
             pos, mom, force = integrator.vel_ver(pos, mom, pistonPos, 0.0, dt, force, Lx, Ly, Lz, radius)
-
-            # impose the boundaries
-            pos = boundaries.periodic_boundary_position(pos, N, Lx, Ly)
-            
-            if t < pistonEndTime:
-                # piston is still moving
-                pistonPos = boundaries.calc_Piston_Position(pistonPos, pistonVel, dt, pistonEndTime, t)
-            else:
-                # piston is stationary 
-                pistonVel = 0.
-            
-            pos, mom = boundaries.Momentum_Mirror(pos, mom, pistonVel, pistonPos, Lz, dt, N)
+            pos, mom = boundaries.Momentum_Mirror(pos, mom, 0.0, pistonPos, Lz, dt, N)
 
             # Calculate temperature before scaling
-            current_temp = measurables.calc_temp(momentum)
+            current_temp = measurables.calc_temp(mom)
+            THistEQ[i] = current_temp
             # Call thermostat function
-            momentum  = thermostat(momentum, current_temp, desired_temp, M_scale)
+            mom  = thermostat.thermostat(mom, current_temp, desired_temp, M_scale)
+            
+        # notify user we are done with EQ run
+        print("100%. Done!")
+
+    partKEhist[0] = KE
+    KEhist[0] = np.sum(KE)
+    PEhist[0] = PE
+    Ehist[0] = PE + KEhist[0]
+    #PressHist[0][0] = 0 # P0
+    #PressHist[0][1] = 0 # Pex 
+    THist[0] = measurables.calc_temp(mom) 
+
+    if progress:
+        print("==> Simulation run")
+        print(" - running for M = ", M, " steps")
+        print(" - computing...", end='')
         
-
-
     # progress indicator
     progressList = [int(el) for el in M*np.linspace(0,1.,21)]
     progressList.pop(0)
 
-    for i in range(1, M):        
+    for i in range(1, M):     
         # main loop that goes over till given end time
         t = dt*i
             
@@ -216,17 +221,19 @@ def runSimulation(params):
     print(" - writing into file: {0}".format(outFile))
     output.write_pos_vel_hist(outFile, posHist, momHist, partKEhist, pistHist, Lx, Ly, Lz)
 
-#     # save measurables    
-#     baseName, fileext = os.path.splitext(params['input_filename'])
-#     outFile = "0_{0}_measurables.txt".format(baseName)
-#     print(" - writing into file: {0}".format(outFile))
-#     output.write_measurables_hist(outFile, endTime, KEhist, PEhist, Ehist, PressHist, THist)
+    # save measurables    
+    baseName, fileext = os.path.splitext(params['input_filename'])
+    outFile = "0_{0}_measurables.txt".format(baseName)
+    print(" - writing into file: {0}".format(outFile))
+    output.write_measurables_hist(outFile, endTime, KEhist, PEhist, Ehist, PressHist, THist)
 
     # visualize initial and end positions 
     #visualization.visualize(posHist[0],momHist[0])
     #visualization.visualize(posHist[-1],momHist[-1])
     visualization.energies(endTime, dt, KEhist, PEhist, Ehist, block=False, diff=True )
-    visualization.energies(endTime, dt, KEhist, PEhist, Ehist, diff=False )
+    visualization.energies(endTime, dt, KEhist, PEhist, Ehist, block=False, diff=False )
+    visualization.temperature(Meq*dt, dt, THistEQ, title="EQ run: temperature vs. time", block=False )
+    visualization.temperature(endTime, dt, THist )
     
     return
 

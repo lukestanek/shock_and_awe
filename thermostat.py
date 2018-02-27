@@ -15,7 +15,6 @@ def thermostat(mom, current_temp, desired_temp, N_scale):
     
     # Determine momenta scaling
     Scale = np.sqrt(1 + 1/N_scale*(desired_temp/current_temp - 1))
-
     # Rescale momenta
     mom[:,0] = Scale*mom[:,0]
     mom[:,1] = Scale*mom[:,1]
