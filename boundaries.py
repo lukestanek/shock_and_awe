@@ -11,7 +11,7 @@ v0.3    - JK, 2018-02-22 -- small rewrite in periodic_boundary_force to make it 
 import numpy as np
 from numba import jit, prange
 
-@jit()#nopython=True)#, parallel=True)
+@jit(nopython=True, parallel=True)
 def periodic_boundary_force(pos, n_par, x_len, y_len):
     """
     This function applies the periodic boundaries to the
@@ -82,7 +82,7 @@ def periodic_boundary_force(pos, n_par, x_len, y_len):
 
     return(x_diff, y_diff, z_diff)
 
-@jit()#nopython=True)#, parallel=True)  
+@jit(nopython=True, parallel=True)  
 def periodic_boundary_position(pos , n_par, x_len, y_len):
     '''
     This function moves the particles according to the periodic boundaries
@@ -128,7 +128,7 @@ def periodic_boundary_position(pos , n_par, x_len, y_len):
     return pos
 
 
-#@jit()#nopython=True)#, parallel=True)
+@jit(nopython=True, parallel=True)
 def Momentum_Mirror(Position, Momentum, Piston_Momentum, Piston_Position, Mirror_Position, dt, N_Par):
     #This is the function for the momentum mirror and the Piston. It takes in: 
     
@@ -160,7 +160,7 @@ def Momentum_Mirror(Position, Momentum, Piston_Momentum, Piston_Position, Mirror
     return Position, Momentum
 
 
-@jit()#nopython=True)
+@jit(nopython=True)
 def calc_Piston_Position(Piston_Position, Piston_Velocity, dt):
     #This function is extremely straight forward, the function takes in:
     

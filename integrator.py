@@ -14,7 +14,7 @@ import boundaries
 import sys
 import measurables
 
-@jit()#nopython=True)#, parallel=True)
+@jit(nopython=True, parallel=True)
 def vel_ver(position, momentum, Piston_p, Piston_Momentum, dt, force, x_len, y_len, Mirror_Position, radius):
     """
     This is the function that will update our position and momentum arrays. It
@@ -85,7 +85,7 @@ def vel_ver(position, momentum, Piston_p, Piston_Momentum, dt, force, x_len, y_l
     return position, momentum, force
   
   
-@jit()#nopython=True)#, parallel=True)
+@jit(nopython=True, parallel=True)
 def calc_force(position, radius, x_len, y_len):
     """
     This is the function that will calculate the forces for the 
@@ -144,7 +144,7 @@ def calc_force(position, radius, x_len, y_len):
 
     return force
 
-@jit()#nopython=True)#, parallel=True)
+@jit(nopython=True, parallel=True)
 def calc_potential_energy(position, radius, x_len, y_len):
     """
     This is the function that will calculate total potential energy in the

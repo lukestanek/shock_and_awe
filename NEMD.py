@@ -83,7 +83,6 @@ def runSimulation(params):
     Ehist = np.zeros(M)
     PressHist = np.zeros((M,2))         # pressure
     THist = np.zeros(M)                 # temperature
-    THistEQ = np.zeros(Meq)                 # temperature
     
     posHist[0] = pos
     momHist[0] = mom
@@ -101,10 +100,12 @@ def runSimulation(params):
     Ehist[0] = PE + KEhist[0]
     #PressHist[0][0] = 0 # P0
     #PressHist[0][1] = 0 # Pex 
-    THistEQ[0] = measurables.calc_temp(mom) 
 
     if desired_temp > 0 and Meq > 0:
         # run equilibration steps
+        THistEQ = np.zeros(Meq)                 # temperature
+        THistEQ[0] = measurables.calc_temp(mom) 
+
         if progress:
            print("==> Equilibration run....")
            print(" - running for Meq = ", Meq, " steps")
@@ -138,6 +139,9 @@ def runSimulation(params):
         # notify user we are done with EQ run
         print("100%. Done!")
 
+    # compute energies in the system
+    KE = measurables.calc_kinetic_particles(mom)
+    PE = integrator.calc_potential_energy(pos, radius, Lx, Ly)
     partKEhist[0] = KE
     KEhist[0] = np.sum(KE)
     PEhist[0] = PE
@@ -189,7 +193,7 @@ def runSimulation(params):
         pistHist[i] = pistonPos #z component of piston
         posHist[i] = pos
         momHist[i] = mom
-        partKEhist[0] = KE
+        partKEhist[i] = KE
         KEhist[i] = np.sum(KE)
         PEhist[i] = PE
         Ehist[i] = PE + KEhist[i]
@@ -215,25 +219,35 @@ def runSimulation(params):
     #??? we have to define an output file
     #output.write_all_end(posHist, momHist, KEhist, PEhist, Ehist)
     
-    # get input file base name to use it as part of output files...
-    baseName, fileext = os.path.splitext(params['input_filename'])
-    outFile = "0_{0}_pos_vel_KE.txt".format(baseName)
-    print(" - writing into file: {0}".format(outFile))
-    output.write_pos_vel_hist(outFile, posHist, momHist, partKEhist, pistHist, Lx, Ly, Lz)
-
-    # save measurables    
-    baseName, fileext = os.path.splitext(params['input_filename'])
-    outFile = "0_{0}_measurables.txt".format(baseName)
-    print(" - writing into file: {0}".format(outFile))
-    output.write_measurables_hist(outFile, endTime, KEhist, PEhist, Ehist, PressHist, THist)
+#     # get input file base name to use it as part of output files...
+#     baseName, fileext = os.path.splitext(params['input_filename'])
+#     outFile = "0_{0}_pos_vel_KE.txt".format(baseName)
+#     print(" - writing into file: {0}".format(outFile))
+#     output.write_pos_vel_hist(outFile, posHist, momHist, partKEhist, pistHist, Lx, Ly, Lz)
+# 
+#     # save measurables    
+#     baseName, fileext = os.path.splitext(params['input_filename'])
+#     outFile = "0_{0}_measurables.txt".format(baseName)
+#     print(" - writing into file: {0}".format(outFile))
+#     output.write_measurables_hist(outFile, endTime, KEhist, PEhist, Ehist, PressHist, THist)
 
     # visualize initial and end positions 
     #visualization.visualize(posHist[0],momHist[0])
     #visualization.visualize(posHist[-1],momHist[-1])
     visualization.energies(endTime, dt, KEhist, PEhist, Ehist, block=False, diff=True )
     visualization.energies(endTime, dt, KEhist, PEhist, Ehist, block=False, diff=False )
-    visualization.temperature(Meq*dt, dt, THistEQ, title="EQ run: temperature vs. time", block=False )
-    visualization.temperature(endTime, dt, THist )
+ 
+    if desired_temp > 0 and Meq > 0:
+        visualization.temperature(Meq*dt, dt, THistEQ, title="EQ run: temperature vs. time", block=False )
+        
+    visualization.temperature(endTime, dt, THist, block=False )
+    
+    combTemp = THistEQ.tolist()
+    combTemp.extend(THist.tolist())
+    
+    visualization.temperature(Meq*dt+endTime, dt, combTemp )
+
+
     
     return
 

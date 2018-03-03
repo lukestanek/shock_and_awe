@@ -74,7 +74,7 @@ def initilization(N_part,spacing):
     width = 1 # Width of distribution
     
     # Store momenta for each particle
-    momenta = np.empty([N_total,3])
+    momenta = np.zeros([N_total,3])
     momenta[:,0] = np.random.normal(mean,width,N_total)
     momenta[:,1] = np.random.normal(mean,width,N_total)
     momenta[:,2] = np.random.normal(mean,width,N_total)

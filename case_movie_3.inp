@@ -1,0 +1,13 @@
+# run for Friday - main (combined) presentation
+# system dimension
+N = 4, 4, 300				# number of particles in in x, y, z direction
+spacing = 1.2, 1.2, 3		# spacing between particles in x, y, z direction
+m = 1
+dt = 1e-3
+endTime = 5
+piston =  0.0, 250, 1 	# piston initial position, piston velocity and end time of piston movement
+eps = 1.0
+sigma = 150
+radius = 6			# cutoff radius (in \sigma units)
+Tdesired = 0.1  		# desired system temperature
+eq_run = 50, 0.02	# number of steps for equlibration run, M_scale of steps in thermostat as ratio to num of eq. steps

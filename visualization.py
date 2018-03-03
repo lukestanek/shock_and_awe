@@ -73,14 +73,14 @@ def energies(T, dt, KE, PE, H, fig_base = None, block=True, format='pdf', diff=F
     if diff is True:
         # plot difference between total energies
         plt.plot(xAxis, H/H[0] - 1, linestyle='solid', label="diff")
-        plt.ylabel("difference in total energy []")
+        plt.ylabel("difference in total energy (E*) [1/$\\varepsilon$]")
         plt.legend(loc='upper right')
     else:
         # plot all energies in absolute values
         plt.plot(xAxis, KE, linestyle='solid', label="kinetic")
         plt.plot(xAxis, PE, linestyle='solid', label="potential")
         plt.plot(xAxis, H, linestyle='solid', label="total")
-        plt.ylabel("energy [J]")
+        plt.ylabel("energy (E*) [1/$\\varepsilon$]")
         plt.legend(loc='center right')
     
     plt.xlabel("time [s]")
@@ -111,7 +111,7 @@ def temperature(T, dt, temp, block=True, title="Temperature vs. time", ylimits=N
     plt.title(title)
     plt.plot(xAxis, temp,label='temperature')
     plt.xlabel('time [s]')
-    plt.ylabel('temperature []')
+    plt.ylabel('temperature')
     
     if ylimits is not None:
         plt.ylim(ylimits[0], ylimits[1])

@@ -1,0 +1,13 @@
+# system dimension
+N = 4, 4, 4
+spacing = 1.2, 1.2, 1.2
+m = 1.0
+dt = 1e-4
+endTime = 10
+piston =  0.0, 0.0, 0
+eps = 1.0
+sigma = 1.0
+radius = 3
+Tdesired = 0.1		# desired system temperature
+eq_run = 5000, 0.03	# number of steps for equlibration run, M_scale of steps in thermostat as ratio to num of eq. steps
+
